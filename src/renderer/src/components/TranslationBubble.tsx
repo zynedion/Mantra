@@ -21,6 +21,22 @@ export function TranslationBubble({
   const isFocused = focusedBubbleId === bubble.id
   const rndRef = useRef<Rnd | null>(null)
 
+  const isDragging = useRef(false)
+  const isResizing = useRef(false)
+  const isMouseOver = useRef(false)
+
+  const handleMouseEnter = (): void => {
+    isMouseOver.current = true
+    window.electronAPI.setMouseEvents(false)
+  }
+
+  const handleMouseLeave = (): void => {
+    isMouseOver.current = false
+    if (!isDragging.current && !isResizing.current) {
+      window.electronAPI.setMouseEvents(true)
+    }
+  }
+
   const handleCopy = async (): Promise<void> => {
     try {
       const textToCopy =
@@ -64,10 +80,25 @@ export function TranslationBubble({
         height: bubble.isMinimized ? 36 : bubble.size?.height || 'auto'
       }}
       position={bubble.position}
+      onDragStart={() => {
+        isDragging.current = true
+        window.electronAPI.setMouseEvents(false)
+        focusBubble(bubble.id)
+      }}
       onDragStop={(_e, d) => {
+        isDragging.current = false
         updateBubble(bubble.id, { position: { x: d.x, y: d.y } })
+        if (!isMouseOver.current) {
+          window.electronAPI.setMouseEvents(true)
+        }
+      }}
+      onResizeStart={() => {
+        isResizing.current = true
+        window.electronAPI.setMouseEvents(false)
+        focusBubble(bubble.id)
       }}
       onResizeStop={(_e, _direction, ref, _delta, position) => {
+        isResizing.current = false
         updateBubble(bubble.id, {
           position,
           size: {
@@ -75,14 +106,17 @@ export function TranslationBubble({
             height: bubble.isMinimized ? 36 : parseInt(ref.style.height, 10)
           }
         })
+        if (!isMouseOver.current) {
+          window.electronAPI.setMouseEvents(true)
+        }
       }}
       dragHandleClassName="bubble-header"
       minWidth={200}
       maxWidth={500}
       disableDragging={false}
       enableResizing={!bubble.isMinimized}
-      onDragStart={() => focusBubble(bubble.id)}
-      onResizeStart={() => focusBubble(bubble.id)}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
       className={`fixed flex flex-col rounded-lg border overflow-hidden ${
         isFocused
           ? 'border-accent shadow-[0_8px_32px_rgba(0,0,0,0.7)] z-50'
