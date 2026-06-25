@@ -10,8 +10,22 @@ function App(): React.JSX.Element {
     return urlParams.get('window')
   })
   const [settings, setSettings] = useState<ISettings | null>(null)
+  const [isMaximized, setIsMaximized] = useState(false)
 
   const { bubbles, addBubble, updateBubble } = useBubbleStore()
+
+  // Listen to window maximize events to update the UI state
+  useEffect(() => {
+    if (windowName === 'settings') {
+      const unsubscribe = window.electronAPI.onWindowMaximizedState((maxState) => {
+        setIsMaximized(maxState)
+      })
+      return () => {
+        unsubscribe()
+      }
+    }
+    return undefined
+  }, [windowName])
 
   useEffect(() => {
     // Fetch Settings
@@ -316,13 +330,32 @@ function App(): React.JSX.Element {
             </span>
             <span>Settings</span>
           </div>
-          <button
-            className="text-text-secondary hover:text-error hover:bg-bg-hover rounded px-2 py-0.5 no-drag"
-            onClick={() => window.close()}
-            aria-label="Close"
-          >
-            ×
-          </button>
+          <div className="flex items-center no-drag">
+            <button
+              className="text-text-secondary hover:text-text-primary hover:bg-bg-hover rounded px-2.5 py-1 text-xs transition-colors duration-150"
+              onClick={() => window.electronAPI.minimizeWindow()}
+              aria-label="Minimize"
+              title="Minimize"
+            >
+              —
+            </button>
+            <button
+              className="text-text-secondary hover:text-text-primary hover:bg-bg-hover rounded px-2.5 py-1 text-xs transition-colors duration-150 font-bold"
+              onClick={() => window.electronAPI.maximizeWindow()}
+              aria-label={isMaximized ? 'Restore' : 'Maximize'}
+              title={isMaximized ? 'Restore' : 'Maximize'}
+            >
+              {isMaximized ? '❐' : '▢'}
+            </button>
+            <button
+              className="text-text-secondary hover:text-error hover:bg-bg-hover rounded px-2.5 py-1 text-sm transition-colors duration-150"
+              onClick={() => window.close()}
+              aria-label="Close"
+              title="Close"
+            >
+              ×
+            </button>
+          </div>
         </div>
 
         {/* Content Area */}
