@@ -310,9 +310,11 @@ function App(): React.JSX.Element {
       <div className="w-screen h-screen bg-bg-settings text-text-primary flex flex-col select-none border border-border rounded-lg overflow-hidden shadow-settings">
         {/* Custom Title Bar */}
         <div className="h-8 bg-bg-settings flex items-center justify-between px-3 border-b border-border drag-region">
-          <div className="flex items-center gap-2 text-text-secondary text-sm">
-            <span className="text-accent font-bold">M</span>
-            <span>Mantra Settings</span>
+          <div className="flex items-center gap-2 text-text-secondary text-xs font-semibold">
+            <span className="text-accent font-black bg-accent-dim/60 px-1.5 py-0.5 rounded text-[10px] select-none">
+              M
+            </span>
+            <span>Settings</span>
           </div>
           <button
             className="text-text-secondary hover:text-error hover:bg-bg-hover rounded px-2 py-0.5 no-drag"
