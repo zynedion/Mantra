@@ -7,6 +7,30 @@
 
 ---
 
+## 2026-06-25 — Feature 02 Implemented
+
+### What was built
+- Implemented `src/main/context-menu.ts` to register/unregister context menu commands via Windows Registry shell entries under `HKCU\Software\Classes\*`. It auto-resolves between production (`Mantra.exe`) and dev mode (`electron.cmd` with project path).
+- Modified `src/main/index.ts` to listen to `--translate-selection` command-line arguments on both first startup and second instance locks.
+- Configured 100ms clipboard synchronization delay after triggering to allow browsers/Click-to-Do to copy text to the clipboard.
+- Implemented deduplication logic preventing identical translation requests within a 500ms window.
+- Configured text truncation, limiting inputs to 2000 characters and passing an `isTruncated` status to the renderer.
+- Implemented Tray balloon notifications for empty selection warnings.
+- Modified React `App.tsx` to handle `context-menu-triggered` IPC event, toggling ignore mouse events on the transparent `bubbleWindow` so it becomes interactive only when the mock bubble is populated.
+- Verified Windows Registry structure via `reg query` and successfully compiled all bundles.
+
+### Decisions made
+- **Direct CLI Registry Writes**: Used `reg add` commands directly in `child_process.exec` rather than writing a temporary `.reg` file, reducing disk I/O.
+- **Context-Isolated Bridge Events**: Handled subscription listeners cleanly in Preload to allow the React renderer to listen for context menu triggers without exposing the raw Electron ipcRenderer.
+
+### Deviations from spec
+- None. Fully compliant with specs.
+
+### Next session should start with
+- Feature 03 (Translation Pipeline) to replace the mock response handler with the real MyMemory translation API.
+
+---
+
 ## 2026-06-25 — Feature 01 Implemented
 
 ### What was built

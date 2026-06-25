@@ -23,7 +23,7 @@ Mantra integrates into the Windows right-click context menu as a custom action. 
 | # | Feature | Status | File | Depends On |
 |---|---------|--------|------|------------|
 | 1 | Electron App Shell + Tray | ✅ Done | 03_features/01_app-shell.md | — |
-| 2 | Context Menu Integration | ⏳ Pending | 03_features/02_context-menu.md | Feature 1 |
+| 2 | Context Menu Integration | ✅ Done | 03_features/02_context-menu.md | Feature 1 |
 | 3 | Translation Pipeline | ⏳ Pending | 03_features/03_translation-pipeline.md | Feature 1 |
 | 4 | Draggable Translation Bubbles UI | ⏳ Pending | 03_features/04_translation-bubbles.md | Feature 2, 3 |
 | 5 | AI Improvement Layer | ⏳ Pending | 03_features/05_ai-improvement.md | Feature 3, 4 |

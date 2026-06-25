@@ -2,18 +2,66 @@ import { useEffect, useState } from 'react'
 
 function App(): React.JSX.Element {
   const [windowName, setWindowName] = useState<string | null>(null)
+  const [receivedText, setReceivedText] = useState<string>('')
+  const [isTruncated, setIsTruncated] = useState<boolean>(false)
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search)
     setWindowName(urlParams.get('window'))
   }, [])
 
+  useEffect(() => {
+    if (windowName === 'bubble') {
+      const unsubscribe = window.electronAPI.onContextMenuTriggered(
+        (data: any) => {
+          // Support both string payload and object payload { text, isTruncated }
+          const textVal = typeof data === 'string' ? data : data.text
+          const truncVal = typeof data === 'object' ? !!data.isTruncated : false
+          setReceivedText(textVal)
+          setIsTruncated(truncVal)
+
+          // Enable mouse events to interact with the bubble
+          window.electronAPI.setMouseEvents(false)
+        }
+      )
+      return () => {
+        unsubscribe()
+      }
+    }
+    return undefined
+  }, [windowName])
+
   if (windowName === 'bubble') {
     return (
       <div className="w-screen h-screen bg-transparent pointer-events-none select-none flex items-center justify-center">
-        <div className="text-text-muted text-xs bg-bg-bubble border border-border p-2 rounded-md">
-          Mantra Bubble Overlay (Active)
-        </div>
+        {receivedText ? (
+          <div className="w-[280px] bg-bg-bubble border border-border p-4 rounded-lg shadow-bubble text-text-primary flex flex-col pointer-events-auto select-text">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-accent font-bold text-xs">MANTRA BUBBLE</span>
+              <button
+                className="text-text-secondary hover:text-text-primary text-sm font-bold cursor-pointer"
+                onClick={() => {
+                  setReceivedText('')
+                  window.electronAPI.setMouseEvents(true)
+                }}
+              >
+                ×
+              </button>
+            </div>
+            <div className="text-sm bg-bg-input p-2 rounded border border-border break-words font-medium">
+              {receivedText}
+            </div>
+            {isTruncated && (
+              <div className="text-[10px] text-warning mt-1">
+                * Text was truncated to 2000 characters
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="text-text-muted text-xs bg-bg-bubble border border-border p-2 rounded-md">
+            Mantra Bubble Overlay (Active & Click-through)
+          </div>
+        )}
       </div>
     )
   }

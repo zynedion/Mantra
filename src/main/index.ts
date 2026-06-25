@@ -1,20 +1,28 @@
-import { app, BrowserWindow, Tray, Menu, screen } from 'electron'
+import { app, BrowserWindow, Tray, Menu, screen, clipboard } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { registerIpcHandlers } from './ipc-handlers'
+import { registerContextMenu } from './context-menu'
 
 let bubbleWindow: BrowserWindow | null = null
 let settingsWindow: BrowserWindow | null = null
 let tray: Tray | null = null
 let isQuitting = false
 
+let lastTriggeredText = ''
+let lastTriggeredTime = 0
+
 // Single Instance Lock
 const gotLock = app.requestSingleInstanceLock()
 if (!gotLock) {
   app.quit()
 } else {
-  app.on('second-instance', () => {
-    showSettingsWindow()
+  app.on('second-instance', (_event, argv) => {
+    if (argv.includes('--translate-selection')) {
+      triggerTranslationFromClipboard()
+    } else {
+      showSettingsWindow()
+    }
   })
 }
 
@@ -24,6 +32,52 @@ function showSettingsWindow(): void {
     settingsWindow.show()
     settingsWindow.focus()
   }
+}
+
+function handleSelectedText(text: string): void {
+  const trimmed = text.trim()
+  if (!trimmed) {
+    if (tray) {
+      tray.displayBalloon({
+        title: 'Mantra',
+        content: 'No text selected. Copy the text first, then use Translate with Mantra.',
+        iconType: 'info'
+      })
+    }
+    return
+  }
+
+  const now = Date.now()
+  if (trimmed === lastTriggeredText && now - lastTriggeredTime < 500) {
+    console.log('Deduplicated context menu trigger')
+    return
+  }
+  lastTriggeredText = trimmed
+  lastTriggeredTime = now
+
+  let processedText = trimmed
+  let isTruncated = false
+  if (processedText.length > 2000) {
+    processedText = processedText.substring(0, 2000)
+    isTruncated = true
+  }
+
+  if (bubbleWindow) {
+    if (!bubbleWindow.isVisible()) {
+      bubbleWindow.show()
+    }
+    bubbleWindow.webContents.send('context-menu-triggered', {
+      text: processedText,
+      isTruncated
+    })
+  }
+}
+
+function triggerTranslationFromClipboard(): void {
+  setTimeout(() => {
+    const text = clipboard.readText()
+    handleSelectedText(text)
+  }, 100)
 }
 
 function updateBubbleWindowBounds(): void {
@@ -155,8 +209,20 @@ app.whenReady().then(() => {
   createSettingsWindow()
   createTray()
 
+  // Register Windows Registry Context Menu
+  registerContextMenu()
+
   // Register IPC handlers
   registerIpcHandlers(bubbleWindow, () => settingsWindow)
+
+  // If launched via context menu directly while app was not running
+  if (process.argv.includes('--translate-selection')) {
+    if (bubbleWindow) {
+      bubbleWindow.webContents.on('did-finish-load', () => {
+        triggerTranslationFromClipboard()
+      })
+    }
+  }
 
   // Listen for monitor changes to recalculate Bubble bounds
   screen.on('display-added', updateBubbleWindowBounds)
