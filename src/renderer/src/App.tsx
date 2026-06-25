@@ -12,7 +12,7 @@ function App(): React.JSX.Element {
   const [settings, setSettings] = useState<ISettings | null>(null)
   const [isMaximized, setIsMaximized] = useState(false)
 
-  const { bubbles, addBubble, updateBubble } = useBubbleStore()
+  const { addBubble, updateBubble } = useBubbleStore()
 
   // Listen to window maximize events to update the UI state
   useEffect(() => {
