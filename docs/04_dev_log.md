@@ -17,6 +17,7 @@
 - Modified `src/main/index.ts` with single instance lock, system tray lifecycle (Quit, Open Settings, Left Click action), full-screen transparent click-through `bubbleWindow`, centered frameless `settingsWindow`, and automatic layout recalculation on display changes.
 - Modified Preload scripts (`preload/index.ts` and `preload/index.d.ts`) to expose context-isolated API bindings under `window.electronAPI`.
 - Verified typechecking and builds compile successfully. Confirmed `config.json` initialization in AppData.
+- Initialized local Git repository, created initial commit, and created a new public GitHub repository [zynedion/Mantra](https://github.com/zynedion/Mantra) using the GitHub CLI (`gh`), pushing the initial codebase.
 
 ### Decisions made
 - **Vite Router-less Windowing**: Load same entry point `index.html` with query params (`?window=bubble` and `?window=settings`) to easily render specific window layouts.
