@@ -141,13 +141,24 @@ function createSettingsWindow(): void {
     width: 560,
     height: 600,
     frame: false,
-    resizable: false,
+    resizable: true,
+    minWidth: 560,
+    minHeight: 600,
     center: true,
     show: false,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false
     }
+  })
+
+  // Watch maximize and unmaximize events to sync React UI controls
+  settingsWindow.on('maximize', () => {
+    settingsWindow?.webContents.send('window-maximized-state', true)
+  })
+
+  settingsWindow.on('unmaximize', () => {
+    settingsWindow?.webContents.send('window-maximized-state', false)
   })
 
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
