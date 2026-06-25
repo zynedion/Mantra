@@ -26,6 +26,9 @@ declare global {
       onContextMenuTriggered: (
         callback: (data: string | { text: string; isTruncated: boolean }) => void
       ) => () => void
+      minimizeWindow: () => Promise<void>
+      maximizeWindow: () => Promise<boolean>
+      onWindowMaximizedState: (callback: (isMaximized: boolean) => void) => () => void
     }
   }
 }

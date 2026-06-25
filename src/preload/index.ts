@@ -42,6 +42,18 @@ const electronAPI = {
     return () => {
       ipcRenderer.off('context-menu-triggered', subscription)
     }
+  },
+
+  minimizeWindow: () => ipcRenderer.invoke('window-minimize'),
+
+  maximizeWindow: () => ipcRenderer.invoke('window-maximize'),
+
+  onWindowMaximizedState: (callback: (isMaximized: boolean) => void) => {
+    const subscription = (_event: unknown, isMaximized: boolean): void => callback(isMaximized)
+    ipcRenderer.on('window-maximized-state', subscription)
+    return () => {
+      ipcRenderer.off('window-maximized-state', subscription)
+    }
   }
 }
 
