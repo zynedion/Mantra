@@ -269,4 +269,26 @@ export function registerIpcHandlers(bubbleWindow: BrowserWindow | null): void {
       return { valid: false, status: err.response?.status ?? 0 }
     }
   })
+
+  // window-minimize
+  ipcMain.handle('window-minimize', (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender)
+    if (win) {
+      win.minimize()
+    }
+  })
+
+  // window-maximize
+  ipcMain.handle('window-maximize', (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender)
+    if (win) {
+      if (win.isMaximized()) {
+        win.unmaximize()
+      } else {
+        win.maximize()
+      }
+      return win.isMaximized()
+    }
+    return false
+  })
 }
