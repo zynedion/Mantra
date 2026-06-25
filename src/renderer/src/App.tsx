@@ -40,16 +40,12 @@ function App(): React.JSX.Element {
     }
   }, [])
 
-  // Dynamic Click-Through capturing based on bubble count
+  // Set default window click-through behavior to ignore mouse events
   useEffect(() => {
     if (windowName === 'bubble') {
-      if (bubbles.length === 0) {
-        window.electronAPI.setMouseEvents(true)
-      } else {
-        window.electronAPI.setMouseEvents(false)
-      }
+      window.electronAPI.setMouseEvents(true)
     }
-  }, [bubbles.length, windowName])
+  }, [windowName])
 
   // Key handler for Escape key dismissal
   useEffect(() => {
