@@ -12,6 +12,19 @@ const electronAPI = {
 
   saveSettings: (settings: Partial<ISettings>) => ipcRenderer.invoke('save-settings', settings),
 
+  testOllama: (baseUrl: string, model: string) =>
+    ipcRenderer.invoke('test-ollama', { baseUrl, model }),
+
+  testGroq: (apiKey: string) => ipcRenderer.invoke('test-groq', { apiKey }),
+
+  onSettingsUpdated: (callback: (settings: ISettings) => void) => {
+    const subscription = (_event: unknown, settings: ISettings): void => callback(settings)
+    ipcRenderer.on('settings-updated', subscription)
+    return () => {
+      ipcRenderer.off('settings-updated', subscription)
+    }
+  },
+
   getHistory: (params: { limit: number }) => ipcRenderer.invoke('get-history', params),
 
   clearHistory: () => ipcRenderer.invoke('clear-history'),

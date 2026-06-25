@@ -33,7 +33,7 @@ Mantra integrates into the Windows right-click context menu as a custom action. 
 | 3   | Translation Pipeline             | ✅ Done    | 03_features/03_translation-pipeline.md | Feature 1    |
 | 4   | Draggable Translation Bubbles UI | ✅ Done    | 03_features/04_translation-bubbles.md  | Feature 2, 3 |
 | 5   | AI Improvement Layer             | ✅ Done    | 03_features/05_ai-improvement.md       | Feature 3, 4 |
-| 6   | Settings Panel                   | ⏳ Pending | 03_features/06_settings-panel.md       | Feature 3, 5 |
+| 6   | Settings Panel                   | ✅ Done    | 03_features/06_settings-panel.md       | Feature 3, 5 |
 
 Status options: 🔄 In Progress · ✅ Done · ⏳ Pending · 🚫 Blocked
 

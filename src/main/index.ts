@@ -1,8 +1,9 @@
 import { app, BrowserWindow, Tray, Menu, screen, clipboard } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
-import { registerIpcHandlers } from './ipc-handlers'
+import { registerIpcHandlers, store } from './ipc-handlers'
 import { registerContextMenu } from './context-menu'
+import { ISettings } from '../renderer/types'
 
 let bubbleWindow: BrowserWindow | null = null
 let settingsWindow: BrowserWindow | null = null
@@ -27,6 +28,9 @@ if (!gotLock) {
 }
 
 function showSettingsWindow(): void {
+  if (!settingsWindow) {
+    createSettingsWindow()
+  }
   if (settingsWindow) {
     if (settingsWindow.isMinimized()) settingsWindow.restore()
     settingsWindow.show()
@@ -156,8 +160,14 @@ function createSettingsWindow(): void {
 
   settingsWindow.on('close', (event) => {
     if (!isQuitting) {
-      event.preventDefault()
-      settingsWindow?.hide()
+      const settings = store.get('settings') as ISettings
+      const minimizeToTray = settings?.minimizeToTray !== false
+      if (minimizeToTray) {
+        event.preventDefault()
+        settingsWindow?.hide()
+      } else {
+        settingsWindow = null
+      }
     }
   })
 }

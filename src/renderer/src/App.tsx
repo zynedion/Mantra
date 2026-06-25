@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { ISettings, IBubble } from '../types'
 import { useBubbleStore } from './store/bubbles'
 import { BubbleManager } from './components/BubbleManager'
+import { SettingsPanel } from './components/SettingsPanel'
 
 function App(): React.JSX.Element {
   const [windowName] = useState<string | null>(() => {
@@ -15,6 +16,14 @@ function App(): React.JSX.Element {
   useEffect(() => {
     // Fetch Settings
     window.electronAPI.getSettings().then(setSettings)
+
+    // Listen for settings changes broadcasted by the settings window
+    const unsubscribe = window.electronAPI.onSettingsUpdated((newSettings) => {
+      setSettings(newSettings)
+    })
+    return () => {
+      unsubscribe()
+    }
   }, [])
 
   // Dynamic Click-Through capturing based on bubble count
@@ -315,11 +324,7 @@ function App(): React.JSX.Element {
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 p-6 flex flex-col justify-center items-center">
-          <h1 className="text-xl font-bold text-text-primary mb-2">Mantra</h1>
-          <p className="text-text-secondary text-sm">Desktop Manga Translator</p>
-          <div className="mt-4 text-xs text-text-muted">App Shell Loaded Successfully.</div>
-        </div>
+        <SettingsPanel />
       </div>
     )
   }

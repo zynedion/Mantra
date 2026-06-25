@@ -1,6 +1,8 @@
-import { ipcMain, BrowserWindow, safeStorage } from 'electron'
+import { ipcMain, BrowserWindow, safeStorage, app } from 'electron'
 import StoreClass from 'electron-store'
 import { randomUUID } from 'crypto'
+import { execSync } from 'child_process'
+import axios from 'axios'
 import { ISettings } from '../renderer/types'
 import { translateText } from '../renderer/services/translation'
 import { improveWithOllama, improveWithGroq, IMPROVE_PROMPT } from './ai-improver'
@@ -30,7 +32,7 @@ const DEFAULT_SETTINGS: ISettings = {
   minimizeToTray: true
 }
 
-const store = new Store({
+export const store = new Store({
   defaults: {
     schema_version: 1,
     settings: DEFAULT_SETTINGS,
@@ -91,7 +93,33 @@ export function registerIpcHandlers(bubbleWindow: BrowserWindow | null): void {
           : ''
       }
 
+      // Handle start-on-boot via Windows registry
+      if (partialSettings.startOnBoot !== undefined) {
+        const exePath = app.getPath('exe')
+        const runKey = 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run'
+        try {
+          if (partialSettings.startOnBoot) {
+            execSync(`reg add "${runKey}" /v "Mantra" /t REG_SZ /d "${exePath}" /f`)
+          } else {
+            execSync(`reg delete "${runKey}" /v "Mantra" /f`)
+          }
+        } catch (regErr) {
+          // Deleting a non-existent run key throws an error; catch it silently
+          console.warn('Startup registry edit warning:', regErr)
+        }
+      }
+
       store.set('settings', updatedSettings)
+
+      // Broadcast settings updates to the bubble window if it is open/referenced
+      if (bubbleWindow) {
+        const settingsToBroadcast = {
+          ...updatedSettings,
+          groqApiKey: updatedSettings.groqApiKey ? decryptKey(updatedSettings.groqApiKey) : ''
+        }
+        bubbleWindow.webContents.send('settings-updated', settingsToBroadcast)
+      }
+
       return { success: true }
     } catch (e) {
       console.error('Failed to save settings:', e)
@@ -209,6 +237,36 @@ export function registerIpcHandlers(bubbleWindow: BrowserWindow | null): void {
           message: (err.message as string) || 'AI improvement failed.'
         }
       }
+    }
+  })
+
+  // test-ollama
+  ipcMain.handle(
+    'test-ollama',
+    async (_, { baseUrl, model }: { baseUrl: string; model: string }) => {
+      try {
+        const response = await axios.get(`${baseUrl}/api/tags`, { timeout: 5000 })
+        const models = response.data?.models ?? []
+        const found = models.some((m: { name: string }) => m.name.startsWith(model))
+        return { connected: true, modelFound: found }
+      } catch {
+        return { connected: false, modelFound: false }
+      }
+    }
+  )
+
+  // test-groq
+  ipcMain.handle('test-groq', async (_, { apiKey }: { apiKey: string }) => {
+    const trimmedKey = apiKey.trim()
+    try {
+      await axios.get('https://api.groq.com/openai/v1/models', {
+        headers: { Authorization: `Bearer ${trimmedKey}` },
+        timeout: 5000
+      })
+      return { valid: true }
+    } catch (error: unknown) {
+      const err = error as { response?: { status?: number } }
+      return { valid: false, status: err.response?.status ?? 0 }
     }
   })
 }

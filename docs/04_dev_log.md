@@ -7,6 +7,41 @@
 
 ---
 
+## 2026-06-25 — Feature 06 Implemented
+
+### What was built
+
+- Expose testing APIs (`testOllama`, `testGroq`) and a `settings-updated` sync channel in preload scripts.
+- Implemented `test-ollama` and `test-groq` IPC handlers in `src/main/ipc-handlers.ts` to query local LLM availability and Groq model configurations with 5-second connection pings.
+- Implemented Windows Run registry key (`HKCU\Software\Microsoft\Windows\CurrentVersion\Run`) insertion and deletion in `save-settings` IPC handler for automatic boot configurations.
+- Created `src/renderer/src/store/settings.ts` Zustand settings store, coordinating immediately-persisted values.
+- Built a four-tab settings GUI control panel component `src/renderer/src/components/SettingsPanel.tsx` supporting:
+  - Language selection dropdowns.
+  - LLM model inputs, host inputs, connection tests, and success/error status badges.
+  - Groq API keys password inputs, eye show/hide controls, and connection validation checks.
+  - Opacity slide metrics.
+  - Windows Run startup and minimize-to-tray configurations.
+  - General version and repository metadata about the application.
+- Configured window close hooks and recreate handlers inside `src/main/index.ts` to correctly handle `minimizeToTray = false` (destroying settings window on close, and recreating it on open settings call).
+- Linked dynamic opacity inline styles (`style={{ opacity }}`) in `TranslationBubble.tsx` to settings state updates, and subscribed to `onSettingsUpdated` inside `App.tsx` bubble overlay window to propagate settings changes live.
+- Ran compile, lint, and build verification checks, confirming zero static analysis issues.
+
+### Decisions made
+
+- **Decoupled Settings Sync**: Broadcasted settings changes from the settings window to the transparent bubble window via the main process webContents channel (`settings-updated`) to synchronize visual overlays in real time.
+- **Asynchronous local inputs sync**: Used a setTimeout timer when setting local states within the settings load effect to conform with standard non-cascading React render lifecycles.
+- **Recreatable settings window**: Allowed the settings window reference to be destroyed and set to null if `minimizeToTray` is disabled, and safely re-scaffolded it inside `showSettingsWindow()` when requested.
+
+### Deviations from spec
+
+- None. Fully compliant with specs.
+
+### Next session should start with
+
+- End of v1 initial implementation branch tasks, packaging verification, and finalizing release checklist.
+
+---
+
 ## 2026-06-25 — Feature 05 Implemented
 
 ### What was built
