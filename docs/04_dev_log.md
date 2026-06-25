@@ -7,6 +7,39 @@
 
 ---
 
+## 2026-06-25 — Feature 05 Implemented
+
+### What was built
+
+- Extended `IBubble` typescript interface in `src/renderer/types/index.ts` with optional layout and state flags (`showImproved`, `aiError`).
+- Refactored `ITranslationRequest` and history tracking to support client-generated bubble IDs.
+- Created `src/main/ai-improver.ts` service implementing:
+  - Manga-specific dialogue naturalization prompt generator.
+  - Local Ollama connection (`/api/generate`) with a 30-second timeout, mapping connection errors (`OLLAMA_OFFLINE`) and missing models (`OLLAMA_MODEL_NOT_FOUND`).
+  - Cloud Groq completions connection with a 15-second timeout, mapping keys (`GROQ_INVALID_KEY`) and rate limits (`GROQ_RATE_LIMIT`).
+- Integrated the real AI service handlers in `src/main/ipc-handlers.ts`, decrypting keys using `safeStorage.decryptString`, and updating matching target history IDs.
+- Modified React components:
+  - `TranslationBubble.tsx`: Accept `settings` and `onImprove` callbacks. Add togglable `showImproved` text display (switching between raw translation and AI naturalized dialogue). Incorporate a sub-label box showing `aiError` when naturalization fails without affecting raw readability. Include `✨ Improve` footer button disabled and labeled `Improving...` during requests. Add `duration` metric next to bubble footer timestamp.
+  - `BubbleManager.tsx`: Accept `settings` and `onImprove` props and map them to bubbles.
+  - `App.tsx`: Track total elapsed time (`startTime`). Coordinate sequential `Translating...` and `Improving...` skeleton loader transition on `autoImprove` complete. Handle manual improvement retry logic.
+- Resolved typecheck, ESLint rules (fixing explicit `any` using specific axios exception type definitions), and formatted codebase completely.
+
+### Decisions made
+
+- **Context-Aligned IDs**: Allowed the client to generate unique IDs and passed them to the translation and AI handlers to easily match and persist `improvedText` inside the correct history slots.
+- **Axios Catch Errors Typing**: Cast unknown catch exceptions to structured Axios responses (`code`, `status`, `data.error`) to eliminate explicit `any` type definitions and adhere to strict linter checks.
+- **Graceful Failure Note**: Rendered the AI error as a warning box at the bottom of the dialogue text box rather than triggering a crash or resetting the raw translation.
+
+### Deviations from spec
+
+- None. Fully compliant with specs.
+
+### Next session should start with
+
+- Feature 06 (Settings GUI Panel UI design and layout bindings).
+
+---
+
 ## 2026-06-25 — Feature 04 Implemented
 
 ### What was built

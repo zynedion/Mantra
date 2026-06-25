@@ -13,6 +13,9 @@ export interface IBubble {
   error?: string
   isMinimized?: boolean
   isExpanded?: boolean
+  duration?: string
+  showImproved?: boolean
+  aiError?: string
 }
 
 export interface ISettings {
@@ -29,6 +32,7 @@ export interface ISettings {
 }
 
 export interface ITranslationRequest {
+  id?: string
   text: string
   sourceLang?: string // If omitted, auto-detect via franc
   targetLang: string
@@ -50,8 +54,19 @@ export interface ITranslationResponse {
 }
 
 export interface IAIImproveRequest {
+  id: string
   originalText: string
   translatedText: string
   targetLang: string
   provider: 'ollama' | 'groq'
+}
+
+export interface IAIImproveResponse {
+  data?: {
+    improvedText: string
+  }
+  error?: {
+    code: string
+    message: string
+  }
 }

@@ -3,6 +3,17 @@ import StoreClass from 'electron-store'
 import { randomUUID } from 'crypto'
 import { ISettings } from '../renderer/types'
 import { translateText } from '../renderer/services/translation'
+import { improveWithOllama, improveWithGroq, IMPROVE_PROMPT } from './ai-improver'
+
+interface IHistoryEntry {
+  id: string
+  originalText: string
+  translatedText: string
+  improvedText?: string
+  sourceLang: string
+  targetLang: string
+  createdAt: number
+}
 
 const Store = (StoreClass as unknown as Record<string, typeof StoreClass>).default || StoreClass
 
@@ -137,21 +148,12 @@ export function registerIpcHandlers(bubbleWindow: BrowserWindow | null): void {
 
       // Save to history
       const entry = {
-        id: randomUUID(),
+        id: request.id || randomUUID(),
         originalText: request.text,
         translatedText: result.translatedText,
         sourceLang: result.sourceLang,
         targetLang: result.targetLang,
         createdAt: Date.now()
-      }
-
-      interface IHistoryEntry {
-        id: string
-        originalText: string
-        translatedText: string
-        sourceLang: string
-        targetLang: string
-        createdAt: number
       }
 
       const history: IHistoryEntry[] = (store.get('history') as IHistoryEntry[]) || []
@@ -173,10 +175,40 @@ export function registerIpcHandlers(bubbleWindow: BrowserWindow | null): void {
     }
   })
 
-  // improve-translation (mock for Feature 01)
-  ipcMain.handle('improve-translation', (_, request) => {
-    return {
-      improvedText: `[Mock Improved: ${request.translatedText}]`
+  // improve-translation
+  ipcMain.handle('improve-translation', async (_, request) => {
+    try {
+      const settings = store.get('settings') as ISettings
+      const prompt = IMPROVE_PROMPT(
+        request.originalText,
+        request.translatedText,
+        request.targetLang
+      )
+
+      let improvedText: string
+      if (request.provider === 'ollama') {
+        improvedText = await improveWithOllama(prompt, settings.ollamaModel, settings.ollamaBaseUrl)
+      } else {
+        const apiKey = settings.groqApiKey ? decryptKey(settings.groqApiKey) : ''
+        improvedText = await improveWithGroq(prompt, apiKey)
+      }
+
+      const history: IHistoryEntry[] = (store.get('history') as IHistoryEntry[]) || []
+      const index = history.findIndex((h) => h.id === request.id)
+      if (index !== -1) {
+        history[index].improvedText = improvedText
+        store.set('history', history)
+      }
+
+      return { data: { improvedText } }
+    } catch (error: unknown) {
+      const err = error as Record<string, unknown>
+      return {
+        error: {
+          code: (err.code as string) || 'AI_IMPROVE_FAILED',
+          message: (err.message as string) || 'AI improvement failed.'
+        }
+      }
     }
   })
 }

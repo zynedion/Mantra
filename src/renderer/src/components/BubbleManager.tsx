@@ -1,11 +1,18 @@
+import { ISettings } from '../../types'
 import { useBubbleStore } from '../store/bubbles'
 import { TranslationBubble } from './TranslationBubble'
 
 interface BubbleManagerProps {
   onRetry: (id: string, text: string) => void
+  onImprove: (id: string, originalText: string, translatedText: string) => void
+  settings: ISettings | null
 }
 
-export function BubbleManager({ onRetry }: BubbleManagerProps): React.JSX.Element {
+export function BubbleManager({
+  onRetry,
+  onImprove,
+  settings
+}: BubbleManagerProps): React.JSX.Element {
   const { bubbles, clearAll } = useBubbleStore()
 
   if (bubbles.length === 0) {
@@ -26,6 +33,8 @@ export function BubbleManager({ onRetry }: BubbleManagerProps): React.JSX.Elemen
           key={bubble.id}
           bubble={bubble}
           onRetry={(text) => onRetry(bubble.id, text)}
+          onImprove={() => onImprove(bubble.id, bubble.originalText, bubble.translatedText)}
+          settings={settings}
         />
       ))}
 

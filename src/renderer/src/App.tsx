@@ -57,6 +57,7 @@ function App(): React.JSX.Element {
       const unsubscribe = window.electronAPI.onContextMenuTriggered(
         async (data: string | { text: string; isTruncated: boolean }) => {
           const textVal = typeof data === 'string' ? data : data.text
+          const startTime = Date.now()
           // Generate a client-side random UUID in the renderer
           const id = window.crypto.randomUUID()
           const newBubble: IBubble = {
@@ -68,7 +69,7 @@ function App(): React.JSX.Element {
             position: { x: 0, y: 0 },
             size: { width: 280, height: 180 },
             isImproving: false,
-            createdAt: Date.now(),
+            createdAt: startTime,
             isLoading: true
           }
 
@@ -76,6 +77,7 @@ function App(): React.JSX.Element {
 
           try {
             const response = await window.electronAPI.translateText({
+              id,
               text: textVal,
               targetLang: settings.targetLanguage || 'id'
             })
@@ -86,12 +88,58 @@ function App(): React.JSX.Element {
                 error: response.error.message || 'Translation failed.'
               })
             } else if (response.data) {
-              updateBubble(id, {
-                isLoading: false,
-                translatedText: response.data.translatedText,
-                sourceLang: response.data.sourceLang,
-                targetLang: response.data.targetLang
-              })
+              const rawDuration = ((Date.now() - startTime) / 1000).toFixed(1) + 's'
+              const shouldAutoImprove = settings.autoImprove && settings.aiProvider !== 'none'
+
+              if (shouldAutoImprove) {
+                updateBubble(id, {
+                  isLoading: false,
+                  translatedText: response.data.translatedText,
+                  sourceLang: response.data.sourceLang,
+                  targetLang: response.data.targetLang,
+                  isImproving: true,
+                  duration: rawDuration
+                })
+
+                try {
+                  const improveResponse = await window.electronAPI.improveTranslation({
+                    id,
+                    originalText: textVal,
+                    translatedText: response.data.translatedText,
+                    targetLang: settings.targetLanguage || 'id',
+                    provider: settings.aiProvider as 'ollama' | 'groq'
+                  })
+
+                  if (improveResponse.error) {
+                    updateBubble(id, {
+                      isImproving: false,
+                      aiError: improveResponse.error.message || 'AI improvement failed.'
+                    })
+                  } else if (improveResponse.data) {
+                    const finalDuration = ((Date.now() - startTime) / 1000).toFixed(1) + 's'
+                    updateBubble(id, {
+                      isImproving: false,
+                      improvedText: improveResponse.data.improvedText,
+                      showImproved: true,
+                      duration: finalDuration
+                    })
+                  }
+                } catch (improveErr: unknown) {
+                  const msg = improveErr instanceof Error ? improveErr.message : String(improveErr)
+                  updateBubble(id, {
+                    isImproving: false,
+                    aiError: msg || 'AI improvement failed.'
+                  })
+                }
+              } else {
+                updateBubble(id, {
+                  isLoading: false,
+                  translatedText: response.data.translatedText,
+                  sourceLang: response.data.sourceLang,
+                  targetLang: response.data.targetLang,
+                  duration: rawDuration
+                })
+              }
             }
           } catch (e: unknown) {
             const msg = e instanceof Error ? e.message : String(e)
@@ -112,9 +160,16 @@ function App(): React.JSX.Element {
   // Retry logic triggered by individual bubble
   const handleRetry = useCallback(
     async (id: string, text: string): Promise<void> => {
-      updateBubble(id, { isLoading: true, error: undefined })
+      updateBubble(id, {
+        isLoading: true,
+        error: undefined,
+        aiError: undefined,
+        improvedText: undefined
+      })
+      const startTime = Date.now()
       try {
         const response = await window.electronAPI.translateText({
+          id,
           text,
           targetLang: settings?.targetLanguage || 'id'
         })
@@ -125,12 +180,58 @@ function App(): React.JSX.Element {
             error: response.error.message || 'Translation failed.'
           })
         } else if (response.data) {
-          updateBubble(id, {
-            isLoading: false,
-            translatedText: response.data.translatedText,
-            sourceLang: response.data.sourceLang,
-            targetLang: response.data.targetLang
-          })
+          const rawDuration = ((Date.now() - startTime) / 1000).toFixed(1) + 's'
+          const shouldAutoImprove = settings?.autoImprove && settings?.aiProvider !== 'none'
+
+          if (shouldAutoImprove) {
+            updateBubble(id, {
+              isLoading: false,
+              translatedText: response.data.translatedText,
+              sourceLang: response.data.sourceLang,
+              targetLang: response.data.targetLang,
+              isImproving: true,
+              duration: rawDuration
+            })
+
+            try {
+              const improveResponse = await window.electronAPI.improveTranslation({
+                id,
+                originalText: text,
+                translatedText: response.data.translatedText,
+                targetLang: settings?.targetLanguage || 'id',
+                provider: settings.aiProvider as 'ollama' | 'groq'
+              })
+
+              if (improveResponse.error) {
+                updateBubble(id, {
+                  isImproving: false,
+                  aiError: improveResponse.error.message || 'AI improvement failed.'
+                })
+              } else if (improveResponse.data) {
+                const finalDuration = ((Date.now() - startTime) / 1000).toFixed(1) + 's'
+                updateBubble(id, {
+                  isImproving: false,
+                  improvedText: improveResponse.data.improvedText,
+                  showImproved: true,
+                  duration: finalDuration
+                })
+              }
+            } catch (improveErr: unknown) {
+              const msg = improveErr instanceof Error ? improveErr.message : String(improveErr)
+              updateBubble(id, {
+                isImproving: false,
+                aiError: msg || 'AI improvement failed.'
+              })
+            }
+          } else {
+            updateBubble(id, {
+              isLoading: false,
+              translatedText: response.data.translatedText,
+              sourceLang: response.data.sourceLang,
+              targetLang: response.data.targetLang,
+              duration: rawDuration
+            })
+          }
         }
       } catch (e: unknown) {
         const msg = e instanceof Error ? e.message : String(e)
@@ -143,8 +244,56 @@ function App(): React.JSX.Element {
     [settings, updateBubble]
   )
 
+  // Manual AI improvement logic triggered by individual bubble
+  const handleImprove = useCallback(
+    async (id: string, originalText: string, translatedText: string): Promise<void> => {
+      if (!settings || settings.aiProvider === 'none') return
+
+      updateBubble(id, { isImproving: true, aiError: undefined })
+
+      try {
+        const response = await window.electronAPI.improveTranslation({
+          id,
+          originalText,
+          translatedText,
+          targetLang: settings.targetLanguage || 'id',
+          provider: settings.aiProvider as 'ollama' | 'groq'
+        })
+
+        if (response.error) {
+          updateBubble(id, {
+            isImproving: false,
+            aiError: response.error.message || 'AI improvement failed.'
+          })
+        } else if (response.data) {
+          const state = useBubbleStore.getState()
+          const currentBubble = state.bubbles.find((b) => b.id === id)
+          let totalDuration = currentBubble?.duration || ''
+
+          if (currentBubble?.createdAt) {
+            totalDuration = ((Date.now() - currentBubble.createdAt) / 1000).toFixed(1) + 's'
+          }
+
+          updateBubble(id, {
+            isImproving: false,
+            improvedText: response.data.improvedText,
+            showImproved: true,
+            duration: totalDuration
+          })
+        }
+      } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : String(e)
+        updateBubble(id, {
+          isImproving: false,
+          aiError: msg || 'AI improvement failed.'
+        })
+      }
+    },
+    [settings, updateBubble]
+  )
+
   if (windowName === 'bubble') {
-    return <BubbleManager onRetry={handleRetry} />
+    return <BubbleManager onRetry={handleRetry} onImprove={handleImprove} settings={settings} />
   }
 
   if (windowName === 'settings') {
