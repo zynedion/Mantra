@@ -9,6 +9,10 @@ export interface IBubble {
   size: { width: number; height: number }
   isImproving: boolean // AI improvement in progress
   createdAt: number // Unix timestamp
+  isLoading?: boolean
+  error?: string
+  isMinimized?: boolean
+  isExpanded?: boolean
 }
 
 export interface ISettings {

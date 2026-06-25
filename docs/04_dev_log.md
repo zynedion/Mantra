@@ -7,6 +7,33 @@
 
 ---
 
+## 2026-06-25 — Feature 04 Implemented
+
+### What was built
+
+- Extended `IBubble` typescript interface in `src/renderer/types/index.ts` with optional layout and state flags (`isLoading`, `error`, `isMinimized`, `isExpanded`).
+- Created Zustand store `src/renderer/src/store/bubbles.ts` to manage multi-bubble states. Configured it to auto-stack new bubbles offset by +20px x and y from the previous, trace `focusedBubbleId`, manage target focus transfers on bubble closure, and manage bulk dismissals.
+- Created `src/renderer/src/components/TranslationBubble.tsx` using `react-rnd`'s `<Rnd>` component to support smooth dragging, corner-resizing, and header bounds. Integrated minimizable header bars, a custom skeleton loader, warning borders for error states, an auto-grow "Show more" toggle, absolute clock timestamp formatting, and a clipboard copy action.
+- Created `src/renderer/src/components/BubbleManager.tsx` container to overlay active bubbles and display a persistent counter tray at `bottom-right` with a "Close All" trigger.
+- Integrated the store and `BubbleManager` in `src/renderer/src/App.tsx`. Registered keydown listeners to close the most recently focused bubble on `Escape`, and added hooks to dynamically toggle overlay click-through mouse events when bubble counts shift.
+- Verified build and TypeScript compilation checks are completely clean (`npm run typecheck`, `npm run lint`, `npm run build`), and verified draggable, resizable overlays on simulated inputs.
+
+### Decisions made
+
+- **React-Rnd Size Bounds**: Configured Rnd component dimensions with `minWidth={200}` and `maxWidth={500}`, disabling dragging outside the header and disabling resizing completely when the bubble is minimized.
+- **Escape Key State Fetching**: Used `useBubbleStore.getState()` directly inside the event listener callback to fetch the most up-to-date focused ID without triggering dependency rebuild loops or stale closures.
+- **Pure Local Time Representation**: Refactored relative time difference checks to absolute localized clock time format (`toLocaleTimeString`) to satisfy strict React component render purity rules.
+
+### Deviations from spec
+
+- None. Fully compliant with specs.
+
+### Next session should start with
+
+- Feature 05 (AI Improvement Layer) to add the ✨ Improve button in the bubble footer, integrate local Ollama and Groq cloud APIs, and cache improved translations in the history store.
+
+---
+
 ## 2026-06-25 — Feature 03 Implemented
 
 ### What was built

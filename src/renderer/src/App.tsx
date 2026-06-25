@@ -1,5 +1,7 @@
 import { useEffect, useState, useCallback } from 'react'
-import { ISettings } from '../types'
+import { ISettings, IBubble } from '../types'
+import { useBubbleStore } from './store/bubbles'
+import { BubbleManager } from './components/BubbleManager'
 
 function App(): React.JSX.Element {
   const [windowName] = useState<string | null>(() => {
@@ -8,60 +10,96 @@ function App(): React.JSX.Element {
   })
   const [settings, setSettings] = useState<ISettings | null>(null)
 
-  // Translation Pipeline States
-  const [originalText, setOriginalText] = useState<string>('')
-  const [translatedText, setTranslatedText] = useState<string>('')
-  const [sourceLang, setSourceLang] = useState<string>('')
-  const [isLoading, setIsLoading] = useState<boolean>(false)
-  const [errorMsg, setErrorMsg] = useState<string>('')
-  const [isTruncated, setIsTruncated] = useState<boolean>(false)
+  const { bubbles, addBubble, updateBubble } = useBubbleStore()
 
   useEffect(() => {
     // Fetch Settings
     window.electronAPI.getSettings().then(setSettings)
   }, [])
 
-  const handleTranslate = useCallback(
-    async (text: string): Promise<void> => {
-      setIsLoading(true)
-      setErrorMsg('')
-      setTranslatedText('')
-
-      try {
-        const targetLang = settings?.targetLanguage || 'id'
-        const response = await window.electronAPI.translateText({ text, targetLang })
-
-        if (response.error) {
-          setErrorMsg(response.error.message || 'Translation failed.')
-        } else if (response.data) {
-          setTranslatedText(response.data.translatedText)
-          setSourceLang(response.data.sourceLang)
-        }
-      } catch (e: unknown) {
-        const msg = e instanceof Error ? e.message : String(e)
-        setErrorMsg(msg || 'Translation failed. Check your internet connection.')
-      } finally {
-        setIsLoading(false)
+  // Dynamic Click-Through capturing based on bubble count
+  useEffect(() => {
+    if (windowName === 'bubble') {
+      if (bubbles.length === 0) {
+        window.electronAPI.setMouseEvents(true)
+      } else {
+        window.electronAPI.setMouseEvents(false)
       }
-    },
-    [settings]
-  )
+    }
+  }, [bubbles.length, windowName])
 
+  // Key handler for Escape key dismissal
+  useEffect(() => {
+    if (windowName !== 'bubble') return
+
+    const handleKeyDown = (e: KeyboardEvent): void => {
+      if (e.key === 'Escape') {
+        const state = useBubbleStore.getState()
+        if (state.bubbles.length > 0) {
+          if (state.focusedBubbleId) {
+            state.removeBubble(state.focusedBubbleId)
+          } else {
+            state.removeBubble(state.bubbles[state.bubbles.length - 1].id)
+          }
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [windowName])
+
+  // Context Menu trigger subscription
   useEffect(() => {
     if (windowName === 'bubble' && settings) {
       const unsubscribe = window.electronAPI.onContextMenuTriggered(
-        (data: string | { text: string; isTruncated: boolean }) => {
+        async (data: string | { text: string; isTruncated: boolean }) => {
           const textVal = typeof data === 'string' ? data : data.text
-          const truncVal = typeof data === 'object' ? !!data.isTruncated : false
+          // Generate a client-side random UUID in the renderer
+          const id = window.crypto.randomUUID()
+          const newBubble: IBubble = {
+            id,
+            originalText: textVal,
+            translatedText: '',
+            sourceLang: '',
+            targetLang: settings.targetLanguage || 'id',
+            position: { x: 0, y: 0 },
+            size: { width: 280, height: 180 },
+            isImproving: false,
+            createdAt: Date.now(),
+            isLoading: true
+          }
 
-          setOriginalText(textVal)
-          setIsTruncated(truncVal)
+          addBubble(newBubble)
 
-          // Enable mouse events to interact with the bubble
-          window.electronAPI.setMouseEvents(false)
+          try {
+            const response = await window.electronAPI.translateText({
+              text: textVal,
+              targetLang: settings.targetLanguage || 'id'
+            })
 
-          // Trigger translation
-          handleTranslate(textVal)
+            if (response.error) {
+              updateBubble(id, {
+                isLoading: false,
+                error: response.error.message || 'Translation failed.'
+              })
+            } else if (response.data) {
+              updateBubble(id, {
+                isLoading: false,
+                translatedText: response.data.translatedText,
+                sourceLang: response.data.sourceLang,
+                targetLang: response.data.targetLang
+              })
+            }
+          } catch (e: unknown) {
+            const msg = e instanceof Error ? e.message : String(e)
+            updateBubble(id, {
+              isLoading: false,
+              error: msg || 'Translation failed. Check your internet connection.'
+            })
+          }
         }
       )
       return () => {
@@ -69,88 +107,44 @@ function App(): React.JSX.Element {
       }
     }
     return undefined
-  }, [windowName, settings, handleTranslate])
+  }, [windowName, settings, addBubble, updateBubble])
+
+  // Retry logic triggered by individual bubble
+  const handleRetry = useCallback(
+    async (id: string, text: string): Promise<void> => {
+      updateBubble(id, { isLoading: true, error: undefined })
+      try {
+        const response = await window.electronAPI.translateText({
+          text,
+          targetLang: settings?.targetLanguage || 'id'
+        })
+
+        if (response.error) {
+          updateBubble(id, {
+            isLoading: false,
+            error: response.error.message || 'Translation failed.'
+          })
+        } else if (response.data) {
+          updateBubble(id, {
+            isLoading: false,
+            translatedText: response.data.translatedText,
+            sourceLang: response.data.sourceLang,
+            targetLang: response.data.targetLang
+          })
+        }
+      } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : String(e)
+        updateBubble(id, {
+          isLoading: false,
+          error: msg || 'Translation failed. Check your internet connection.'
+        })
+      }
+    },
+    [settings, updateBubble]
+  )
 
   if (windowName === 'bubble') {
-    return (
-      <div className="w-screen h-screen bg-transparent pointer-events-none select-none flex items-center justify-center">
-        {originalText ? (
-          <div
-            className={`w-[320px] bg-bg-bubble border ${errorMsg ? 'border-error' : 'border-border'} p-4 rounded-lg shadow-bubble text-text-primary flex flex-col pointer-events-auto select-text`}
-          >
-            {/* Header */}
-            <div className="flex justify-between items-center mb-3">
-              <div className="flex items-center gap-2">
-                <span className="text-accent font-bold text-xs">MANTRA</span>
-                {sourceLang && (
-                  <span className="bg-bg-card text-text-secondary text-[10px] px-1.5 py-0.5 rounded-full font-bold uppercase">
-                    {sourceLang} → {settings?.targetLanguage || 'id'}
-                  </span>
-                )}
-              </div>
-              <button
-                className="text-text-secondary hover:text-text-primary text-sm font-bold cursor-pointer"
-                onClick={() => {
-                  setOriginalText('')
-                  setTranslatedText('')
-                  setSourceLang('')
-                  setErrorMsg('')
-                  window.electronAPI.setMouseEvents(true)
-                }}
-              >
-                ×
-              </button>
-            </div>
-
-            {/* Original Text */}
-            <div className="mb-2">
-              <span className="text-[10px] text-text-muted font-bold tracking-wider">ORIGINAL</span>
-              <div className="text-sm text-text-original border-l-2 border-border pl-2 py-0.5 break-words max-h-24 overflow-y-auto">
-                {originalText}
-              </div>
-            </div>
-
-            {/* Translation Output */}
-            <div>
-              <span className="text-[10px] text-text-muted font-bold tracking-wider">
-                TERJEMAHAN
-              </span>
-              {isLoading ? (
-                <div className="text-xs text-text-secondary bg-accent-dim p-3 rounded mt-1 animate-pulse">
-                  Translating...
-                </div>
-              ) : errorMsg ? (
-                <div className="mt-1">
-                  <div className="text-xs text-error bg-red-950/20 border border-error/20 p-3 rounded break-words">
-                    ⚠ {errorMsg}
-                  </div>
-                  <button
-                    className="mt-2 w-full text-xs bg-red-950/30 hover:bg-red-950/50 text-error border border-error/30 py-1.5 rounded cursor-pointer transition"
-                    onClick={() => handleTranslate(originalText)}
-                  >
-                    Retry
-                  </button>
-                </div>
-              ) : (
-                <div className="text-sm text-text-primary bg-accent-dim p-3 rounded border border-accent/15 break-words font-medium mt-1">
-                  {translatedText}
-                </div>
-              )}
-            </div>
-
-            {isTruncated && (
-              <div className="text-[9px] text-warning mt-1.5">
-                * Text truncated to 2000 characters
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="text-text-muted text-xs bg-bg-bubble border border-border p-2 rounded-md">
-            Mantra Bubble Overlay (Active & Click-through)
-          </div>
-        )}
-      </div>
-    )
+    return <BubbleManager onRetry={handleRetry} />
   }
 
   if (windowName === 'settings') {
