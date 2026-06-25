@@ -1,8 +1,10 @@
 import { ipcMain, BrowserWindow, safeStorage } from 'electron'
 import StoreClass from 'electron-store'
+import { randomUUID } from 'crypto'
 import { ISettings } from '../renderer/types'
+import { translateText } from '../renderer/services/translation'
 
-const Store = (StoreClass as any).default || StoreClass
+const Store = (StoreClass as unknown as Record<string, typeof StoreClass>).default || StoreClass
 
 const DEFAULT_SETTINGS: ISettings = {
   targetLanguage: 'id',
@@ -16,7 +18,6 @@ const DEFAULT_SETTINGS: ISettings = {
   startOnBoot: false,
   minimizeToTray: true
 }
-
 
 const store = new Store({
   defaults: {
@@ -51,10 +52,7 @@ function decryptKey(encryptedKey: string): string {
   return encryptedKey
 }
 
-export function registerIpcHandlers(
-  bubbleWindow: BrowserWindow | null,
-  _getSettingsWindow: () => BrowserWindow | null
-): void {
+export function registerIpcHandlers(bubbleWindow: BrowserWindow | null): void {
   // get-settings
   ipcMain.handle('get-settings', () => {
     try {
@@ -86,7 +84,10 @@ export function registerIpcHandlers(
       return { success: true }
     } catch (e) {
       console.error('Failed to save settings:', e)
-      return { success: false, error: { code: 'SETTINGS_SAVE_FAILED', message: (e as Error).message } }
+      return {
+        success: false,
+        error: { code: 'SETTINGS_SAVE_FAILED', message: (e as Error).message }
+      }
     }
   })
 
@@ -129,13 +130,46 @@ export function registerIpcHandlers(
     }
   })
 
-  // translate-text (mock for Feature 01)
-  ipcMain.handle('translate-text', (_, request) => {
-    return {
-      translatedText: `[Mock Translation: ${request.text}]`,
-      sourceLang: request.sourceLang || 'ja',
-      targetLang: request.targetLang,
-      provider: 'mymemory'
+  // translate-text
+  ipcMain.handle('translate-text', async (_, request) => {
+    try {
+      const result = await translateText(request)
+
+      // Save to history
+      const entry = {
+        id: randomUUID(),
+        originalText: request.text,
+        translatedText: result.translatedText,
+        sourceLang: result.sourceLang,
+        targetLang: result.targetLang,
+        createdAt: Date.now()
+      }
+
+      interface IHistoryEntry {
+        id: string
+        originalText: string
+        translatedText: string
+        sourceLang: string
+        targetLang: string
+        createdAt: number
+      }
+
+      const history: IHistoryEntry[] = (store.get('history') as IHistoryEntry[]) || []
+      history.unshift(entry)
+      if (history.length > 500) {
+        history.pop()
+      }
+      store.set('history', history)
+
+      return { data: { ...result, id: entry.id } }
+    } catch (error: unknown) {
+      const err = error as Record<string, unknown>
+      return {
+        error: {
+          code: (err.code as string) || 'TRANSLATION_FAILED',
+          message: (err.message as string) || 'Translation failed.'
+        }
+      }
     }
   })
 

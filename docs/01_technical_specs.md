@@ -1,22 +1,25 @@
 # Technical Specifications
+
 > AI Agent: attach this file to every coding session alongside the relevant feature file.
 > Do not deviate from naming conventions or folder structure defined here.
 
 ## Tech Stack
-| Layer | Technology | Version | Notes |
-|-------|-----------|---------|-------|
-| App Framework | Electron | ^30.x | Main process handles IPC, tray, context menu |
-| Frontend | React | ^18.x | Renderer process; Vite as bundler |
-| Styling | Tailwind CSS | ^3.x | Utility-first; no CSS modules |
-| Drag/Resize | react-rnd | ^10.x | Bubble windows: draggable + resizable |
-| State Management | Zustand | ^4.x | Renderer state only; no Redux |
-| Language Detection | franc | ^6.x | Detects source language from selected text |
-| HTTP Client | axios | ^1.x | All external API calls |
-| Local Storage | electron-store | ^8.x | Persists user settings and translation history |
-| Build/Package | electron-builder | ^24.x | Produces Windows .exe installer |
-| Dev Tooling | electron-vite | ^2.x | Unified Vite config for main + renderer |
+
+| Layer              | Technology       | Version | Notes                                          |
+| ------------------ | ---------------- | ------- | ---------------------------------------------- |
+| App Framework      | Electron         | ^30.x   | Main process handles IPC, tray, context menu   |
+| Frontend           | React            | ^18.x   | Renderer process; Vite as bundler              |
+| Styling            | Tailwind CSS     | ^3.x    | Utility-first; no CSS modules                  |
+| Drag/Resize        | react-rnd        | ^10.x   | Bubble windows: draggable + resizable          |
+| State Management   | Zustand          | ^4.x    | Renderer state only; no Redux                  |
+| Language Detection | franc            | ^6.x    | Detects source language from selected text     |
+| HTTP Client        | axios            | ^1.x    | All external API calls                         |
+| Local Storage      | electron-store   | ^8.x    | Persists user settings and translation history |
+| Build/Package      | electron-builder | ^24.x   | Produces Windows .exe installer                |
+| Dev Tooling        | electron-vite    | ^2.x    | Unified Vite config for main + renderer        |
 
 ## Folder Structure
+
 ```
 mantra/
 ├── src/
@@ -56,83 +59,87 @@ mantra/
 ```
 
 ## Naming Conventions
-| Item | Convention | Example |
-|------|-----------|---------|
-| React components | PascalCase, folder with index.tsx | `TranslationBubble/index.tsx` |
-| Utility functions | camelCase | `detectLanguage()` |
-| Zustand stores | camelCase, suffix `Store` | `useBubbleStore` |
-| IPC channel names | kebab-case strings | `"translate-request"`, `"improve-translation"` |
-| electron-store keys | camelCase | `translationProvider`, `aiProvider` |
-| TypeScript types/interfaces | PascalCase, prefix `I` for interfaces | `ITranslationResult`, `IBubble` |
-| CSS classes | Tailwind utilities only; no custom class names unless necessary | |
-| Environment variables | SCREAMING_SNAKE_CASE | `GROQ_API_KEY` |
-| Files | kebab-case | `context-menu.ts`, `ai-improver.ts` |
+
+| Item                        | Convention                                                      | Example                                        |
+| --------------------------- | --------------------------------------------------------------- | ---------------------------------------------- |
+| React components            | PascalCase, folder with index.tsx                               | `TranslationBubble/index.tsx`                  |
+| Utility functions           | camelCase                                                       | `detectLanguage()`                             |
+| Zustand stores              | camelCase, suffix `Store`                                       | `useBubbleStore`                               |
+| IPC channel names           | kebab-case strings                                              | `"translate-request"`, `"improve-translation"` |
+| electron-store keys         | camelCase                                                       | `translationProvider`, `aiProvider`            |
+| TypeScript types/interfaces | PascalCase, prefix `I` for interfaces                           | `ITranslationResult`, `IBubble`                |
+| CSS classes                 | Tailwind utilities only; no custom class names unless necessary |                                                |
+| Environment variables       | SCREAMING_SNAKE_CASE                                            | `GROQ_API_KEY`                                 |
+| Files                       | kebab-case                                                      | `context-menu.ts`, `ai-improver.ts`            |
 
 ## TypeScript Types (Shared)
+
 ```typescript
 // src/renderer/types/index.ts
 
 export interface IBubble {
-  id: string;                         // nanoid() generated
-  originalText: string;               // Source text from Click to Do / clipboard
-  translatedText: string;             // Raw translation from MyMemory
-  improvedText?: string;              // AI-improved version (optional)
-  sourceLang: string;                 // ISO 639-3 code from franc (e.g. "jpn")
-  targetLang: string;                 // User setting (default: "id")
-  position: { x: number; y: number }; // Current bubble position (px)
-  size: { width: number; height: number };
-  isImproving: boolean;               // AI improvement in progress
-  createdAt: number;                  // Unix timestamp
+  id: string // nanoid() generated
+  originalText: string // Source text from Click to Do / clipboard
+  translatedText: string // Raw translation from MyMemory
+  improvedText?: string // AI-improved version (optional)
+  sourceLang: string // ISO 639-3 code from franc (e.g. "jpn")
+  targetLang: string // User setting (default: "id")
+  position: { x: number; y: number } // Current bubble position (px)
+  size: { width: number; height: number }
+  isImproving: boolean // AI improvement in progress
+  createdAt: number // Unix timestamp
 }
 
 export interface ISettings {
-  targetLanguage: string;             // Default: "id" (Indonesian)
-  translationProvider: "mymemory";    // v1: only MyMemory
-  aiProvider: "none" | "ollama" | "groq";
-  ollamaModel: string;                // Default: "mistral"
-  ollamaBaseUrl: string;              // Default: "http://localhost:11434"
-  groqApiKey: string;                 // Stored encrypted via safeStorage
-  autoImprove: boolean;               // If true, auto-trigger AI improvement
-  bubbleOpacity: number;              // 0.7 – 1.0, default 0.95
-  startOnBoot: boolean;               // Register as Windows startup entry
-  minimizeToTray: boolean;            // Default: true
+  targetLanguage: string // Default: "id" (Indonesian)
+  translationProvider: 'mymemory' // v1: only MyMemory
+  aiProvider: 'none' | 'ollama' | 'groq'
+  ollamaModel: string // Default: "mistral"
+  ollamaBaseUrl: string // Default: "http://localhost:11434"
+  groqApiKey: string // Stored encrypted via safeStorage
+  autoImprove: boolean // If true, auto-trigger AI improvement
+  bubbleOpacity: number // 0.7 – 1.0, default 0.95
+  startOnBoot: boolean // Register as Windows startup entry
+  minimizeToTray: boolean // Default: true
 }
 
 export interface ITranslationRequest {
-  text: string;
-  sourceLang?: string;                // If omitted, auto-detect via franc
-  targetLang: string;
+  text: string
+  sourceLang?: string // If omitted, auto-detect via franc
+  targetLang: string
 }
 
 export interface ITranslationResult {
-  translatedText: string;
-  sourceLang: string;
-  targetLang: string;
-  provider: string;
+  translatedText: string
+  sourceLang: string
+  targetLang: string
+  provider: string
 }
 
 export interface IAIImproveRequest {
-  originalText: string;
-  translatedText: string;
-  targetLang: string;
-  provider: "ollama" | "groq";
+  originalText: string
+  translatedText: string
+  targetLang: string
+  provider: 'ollama' | 'groq'
 }
 ```
 
 ## IPC Channel Contracts
+
 All IPC communication goes through typed channels. Main process uses `ipcMain.handle()`; renderer uses `window.electronAPI.*` exposed via preload.
 
-| Channel | Direction | Payload | Response |
-|---------|-----------|---------|----------|
-| `translate-text` | renderer → main | `ITranslationRequest` | `ITranslationResult` |
-| `improve-translation` | renderer → main | `IAIImproveRequest` | `{ improvedText: string }` |
-| `get-settings` | renderer → main | — | `ISettings` |
-| `save-settings` | renderer → main | `Partial<ISettings>` | `{ success: boolean }` |
-| `get-history` | renderer → main | `{ limit: number }` | `IBubble[]` |
-| `clear-history` | renderer → main | — | `{ success: boolean }` |
-| `context-menu-triggered` | main → renderer | `{ text: string }` | — (event, no response) |
+| Channel                  | Direction       | Payload               | Response                   |
+| ------------------------ | --------------- | --------------------- | -------------------------- |
+| `translate-text`         | renderer → main | `ITranslationRequest` | `ITranslationResult`       |
+| `improve-translation`    | renderer → main | `IAIImproveRequest`   | `{ improvedText: string }` |
+| `get-settings`           | renderer → main | —                     | `ISettings`                |
+| `save-settings`          | renderer → main | `Partial<ISettings>`  | `{ success: boolean }`     |
+| `get-history`            | renderer → main | `{ limit: number }`   | `IBubble[]`                |
+| `clear-history`          | renderer → main | —                     | `{ success: boolean }`     |
+| `context-menu-triggered` | main → renderer | `{ text: string }`    | — (event, no response)     |
 
 ## Environment Variables
+
 ```bash
 # .env (development only — not bundled in production)
 GROQ_API_KEY=                         # Set by user in Settings; stored via Electron safeStorage in prod
@@ -142,6 +149,7 @@ OLLAMA_BASE_URL=http://localhost:11434 # Default Ollama endpoint; overridable in
 > ⚠️ ASSUMPTION: In production, the Groq API key is stored using Electron's `safeStorage.encryptString()` and saved to `electron-store`. It is never written to a .env file in the installed app.
 
 ## Error Handling Rules
+
 1. All `ipcMain.handle()` functions must be wrapped in `try/catch` and return `{ error: string }` on failure — never throw to renderer.
 2. All external HTTP calls (MyMemory, Groq, Ollama) must have a 10-second timeout via `axios` `timeout` config.
 3. If MyMemory API returns an error or non-200, fall back to displaying the original text with a visible error state on the bubble.
@@ -150,12 +158,20 @@ OLLAMA_BASE_URL=http://localhost:11434 # Default Ollama endpoint; overridable in
 6. Never log the Groq API key or any user text to the console in production builds.
 
 ## API Response Format (IPC errors)
+
 ```typescript
 // Success
-{ data: T }
+{
+  data: T
+}
 
 // Error
-{ error: { code: string; message: string } }
+{
+  error: {
+    code: string
+    message: string
+  }
+}
 
 // Error codes
 // TRANSLATION_FAILED      — MyMemory returned error or empty
@@ -168,6 +184,7 @@ OLLAMA_BASE_URL=http://localhost:11434 # Default Ollama endpoint; overridable in
 ```
 
 ## Build & Packaging
+
 ```yaml
 # electron-builder.yml
 appId: com.mantra.translator

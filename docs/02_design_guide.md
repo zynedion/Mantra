@@ -5,105 +5,117 @@
 > not listed in this document.
 
 ## Visual Direction
+
 Mantra's UI is minimal and non-intrusive. The app lives mostly as a tray icon and floating bubbles — it must never feel like a heavy productivity tool. The aesthetic is **clean dark glass**: dark translucent backgrounds, sharp white text, soft blue accents. Think: a lightweight utility overlay, not a dashboard.
 
 The Settings panel is the only "full" screen — it should feel like a focused control panel, not a cluttered options page.
 
 ## Color System (CSS Variables)
+
 ```css
 :root {
   /* Backgrounds */
-  --color-bg-bubble:        rgba(18, 18, 24, 0.95);    /* Bubble window background */
-  --color-bg-settings:      #0f0f14;                   /* Settings panel background */
-  --color-bg-input:         #1a1a24;                   /* Input fields */
-  --color-bg-card:          #1e1e2a;                   /* Card / section container */
-  --color-bg-hover:         #252533;                   /* Hover state on interactive items */
+  --color-bg-bubble: rgba(18, 18, 24, 0.95); /* Bubble window background */
+  --color-bg-settings: #0f0f14; /* Settings panel background */
+  --color-bg-input: #1a1a24; /* Input fields */
+  --color-bg-card: #1e1e2a; /* Card / section container */
+  --color-bg-hover: #252533; /* Hover state on interactive items */
 
   /* Text */
-  --color-text-primary:     #f0f0f5;                   /* Main readable text */
-  --color-text-secondary:   #9090a8;                   /* Labels, metadata, placeholder */
-  --color-text-muted:       #55556a;                   /* Disabled text, hints */
-  --color-text-original:    #c8c8e0;                   /* Original-language text in bubble */
+  --color-text-primary: #f0f0f5; /* Main readable text */
+  --color-text-secondary: #9090a8; /* Labels, metadata, placeholder */
+  --color-text-muted: #55556a; /* Disabled text, hints */
+  --color-text-original: #c8c8e0; /* Original-language text in bubble */
 
   /* Accent */
-  --color-accent:           #5b8cf5;                   /* Primary interactive: buttons, links */
-  --color-accent-hover:     #7aa3ff;                   /* Hover on accent elements */
-  --color-accent-dim:       rgba(91, 140, 245, 0.15);  /* Accent tint for backgrounds */
+  --color-accent: #5b8cf5; /* Primary interactive: buttons, links */
+  --color-accent-hover: #7aa3ff; /* Hover on accent elements */
+  --color-accent-dim: rgba(91, 140, 245, 0.15); /* Accent tint for backgrounds */
 
   /* AI / Improve */
-  --color-ai:               #a855f7;                   /* Purple: AI improvement elements */
-  --color-ai-hover:         #c084fc;
-  --color-ai-dim:           rgba(168, 85, 247, 0.15);
+  --color-ai: #a855f7; /* Purple: AI improvement elements */
+  --color-ai-hover: #c084fc;
+  --color-ai-dim: rgba(168, 85, 247, 0.15);
 
   /* Status */
-  --color-success:          #34d399;                   /* Copied, connected, done */
-  --color-warning:          #fbbf24;                   /* Rate limit, slow response */
-  --color-error:            #f87171;                   /* API failure, key invalid */
+  --color-success: #34d399; /* Copied, connected, done */
+  --color-warning: #fbbf24; /* Rate limit, slow response */
+  --color-error: #f87171; /* API failure, key invalid */
 
   /* Borders */
-  --color-border:           rgba(255, 255, 255, 0.08); /* Subtle dividers */
-  --color-border-focus:     var(--color-accent);
+  --color-border: rgba(255, 255, 255, 0.08); /* Subtle dividers */
+  --color-border-focus: var(--color-accent);
 
   /* Bubble header gradient */
-  --color-bubble-header:    linear-gradient(135deg, #1e2a4a 0%, #1a1a2e 100%);
+  --color-bubble-header: linear-gradient(135deg, #1e2a4a 0%, #1a1a2e 100%);
 }
 ```
 
 ## Typography
+
 ```css
 /* Font stack — use system fonts to avoid install requirements */
-font-family: 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, sans-serif;
+font-family:
+  'Segoe UI Variable',
+  'Segoe UI',
+  system-ui,
+  -apple-system,
+  sans-serif;
 
 /* Scale */
---font-size-xs:    11px;   /* Labels, metadata */
---font-size-sm:    12px;   /* Secondary content */
---font-size-base:  13px;   /* Body text, bubble content */
---font-size-md:    14px;   /* Settings form labels */
---font-size-lg:    16px;   /* Section headers */
---font-size-xl:    20px;   /* Settings page title */
+--font-size-xs: 11px; /* Labels, metadata */
+--font-size-sm: 12px; /* Secondary content */
+--font-size-base: 13px; /* Body text, bubble content */
+--font-size-md: 14px; /* Settings form labels */
+--font-size-lg: 16px; /* Section headers */
+--font-size-xl: 20px; /* Settings page title */
 
 /* Weights */
---font-weight-normal:   400;
---font-weight-medium:   500;
+--font-weight-normal: 400;
+--font-weight-medium: 500;
 --font-weight-semibold: 600;
---font-weight-bold:     700;
+--font-weight-bold: 700;
 
 /* Line heights */
---line-height-tight:  1.3;   /* Bubble text with limited space */
---line-height-normal: 1.5;   /* Settings, readable body */
+--line-height-tight: 1.3; /* Bubble text with limited space */
+--line-height-normal: 1.5; /* Settings, readable body */
 ```
 
 ## Spacing Scale
+
 ```css
---space-1:  4px;
---space-2:  8px;
---space-3:  12px;
---space-4:  16px;
---space-5:  20px;
---space-6:  24px;
---space-8:  32px;
+--space-1: 4px;
+--space-2: 8px;
+--space-3: 12px;
+--space-4: 16px;
+--space-5: 20px;
+--space-6: 24px;
+--space-8: 32px;
 --space-10: 40px;
 ```
 
 ## Border Radius
+
 ```css
---radius-sm:   4px;    /* Inputs, tags */
---radius-md:   8px;    /* Buttons, cards */
---radius-lg:   12px;   /* Bubbles, panels */
---radius-xl:   16px;   /* Large modals */
+--radius-sm: 4px; /* Inputs, tags */
+--radius-md: 8px; /* Buttons, cards */
+--radius-lg: 12px; /* Bubbles, panels */
+--radius-xl: 16px; /* Large modals */
 --radius-full: 9999px; /* Pills, toggles */
 ```
 
 ## Shadows
+
 ```css
---shadow-bubble:   0 8px 32px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(0, 0, 0, 0.4);
+--shadow-bubble: 0 8px 32px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(0, 0, 0, 0.4);
 --shadow-settings: 0 0 0 1px var(--color-border), 0 4px 24px rgba(0, 0, 0, 0.5);
---shadow-button:   0 1px 3px rgba(0, 0, 0, 0.3);
+--shadow-button: 0 1px 3px rgba(0, 0, 0, 0.3);
 ```
 
 ## Component Specs
 
 ### Button
+
 ```
 Variants: primary | secondary | ghost | danger
 
@@ -143,6 +155,7 @@ AI Improve Button (special):
 ```
 
 ### Input
+
 ```
 background: var(--color-bg-input)
 color: var(--color-text-primary)
@@ -163,6 +176,7 @@ password input (Groq API key):
 ```
 
 ### Toggle (boolean settings)
+
 ```
 width: 40px
 height: 22px
@@ -174,6 +188,7 @@ transition: 150ms ease
 ```
 
 ### Select / Dropdown
+
 ```
 background: var(--color-bg-input)
 border: 1px solid var(--color-border)
@@ -184,6 +199,7 @@ chevron icon: right-aligned, var(--color-text-secondary)
 ```
 
 ### Translation Bubble
+
 ```
 Window:
   width: 280px (default); resizable 200px–500px
@@ -232,6 +248,7 @@ Footer:
 ```
 
 ### Settings Panel
+
 ```
 Window:
   width: 560px; height: 600px; non-resizable
@@ -248,7 +265,7 @@ Content area (right, remaining width):
   padding: var(--space-6)
   section title: var(--font-size-lg), var(--font-weight-semibold)
   section divider: 1px solid var(--color-border)
-  
+
   Setting row:
     label (left): var(--font-size-md), var(--color-text-primary)
     sublabel (below label): var(--font-size-sm), var(--color-text-secondary)
@@ -257,17 +274,19 @@ Content area (right, remaining width):
 ```
 
 ## Screen Inventory
-| Screen | Type | Trigger |
-|--------|------|---------|
-| Translation Bubble | Floating overlay (always on top) | Context menu "Translate with Mantra" |
-| Settings — Translation | Full panel page | Tray → Settings → Translation tab |
-| Settings — AI Improvement | Full panel page | Tray → Settings → AI tab |
-| Settings — Appearance | Full panel page | Tray → Settings → Appearance tab |
-| Settings — About | Full panel page | Tray → Settings → About tab |
-| Onboarding Toast (first run) | Small toast notification | First app launch |
-| Error State (bubble) | Bubble error variant | Translation API failure |
+
+| Screen                       | Type                             | Trigger                              |
+| ---------------------------- | -------------------------------- | ------------------------------------ |
+| Translation Bubble           | Floating overlay (always on top) | Context menu "Translate with Mantra" |
+| Settings — Translation       | Full panel page                  | Tray → Settings → Translation tab    |
+| Settings — AI Improvement    | Full panel page                  | Tray → Settings → AI tab             |
+| Settings — Appearance        | Full panel page                  | Tray → Settings → Appearance tab     |
+| Settings — About             | Full panel page                  | Tray → Settings → About tab          |
+| Onboarding Toast (first run) | Small toast notification         | First app launch                     |
+| Error State (bubble)         | Bubble error variant             | Translation API failure              |
 
 ## Responsive / Window Behavior
+
 - App is Windows desktop only; no responsive breakpoints needed
 - Bubbles are freely positioned anywhere on screen; no constraint to app window
 - Settings panel is fixed 560×600px, centered on screen
@@ -275,6 +294,7 @@ Content area (right, remaining width):
 - Multiple bubbles stack offset by 20px from previous: `{ x: prev.x + 20, y: prev.y + 20 }`
 
 ## Accessibility
+
 - All interactive elements must have visible focus rings (2px var(--color-accent) outline)
 - Bubble close button: accessible via keyboard (Tab + Enter/Space)
 - Pressing Escape closes the topmost focused bubble

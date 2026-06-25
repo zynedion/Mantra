@@ -4,43 +4,48 @@
 
 :root {
   /* Backgrounds */
-  --color-bg-bubble:        rgba(18, 18, 24, 0.95);    /* Bubble window background */
-  --color-bg-settings:      #0f0f14;                   /* Settings panel background */
-  --color-bg-input:         #1a1a24;                   /* Input fields */
-  --color-bg-card:          #1e1e2a;                   /* Card / section container */
-  --color-bg-hover:         #252533;                   /* Hover state on interactive items */
+  --color-bg-bubble: rgba(18, 18, 24, 0.95); /* Bubble window background */
+  --color-bg-settings: #0f0f14; /* Settings panel background */
+  --color-bg-input: #1a1a24; /* Input fields */
+  --color-bg-card: #1e1e2a; /* Card / section container */
+  --color-bg-hover: #252533; /* Hover state on interactive items */
 
   /* Text */
-  --color-text-primary:     #f0f0f5;                   /* Main readable text */
-  --color-text-secondary:   #9090a8;                   /* Labels, metadata, placeholder */
-  --color-text-muted:       #55556a;                   /* Disabled text, hints */
-  --color-text-original:    #c8c8e0;                   /* Original-language text in bubble */
+  --color-text-primary: #f0f0f5; /* Main readable text */
+  --color-text-secondary: #9090a8; /* Labels, metadata, placeholder */
+  --color-text-muted: #55556a; /* Disabled text, hints */
+  --color-text-original: #c8c8e0; /* Original-language text in bubble */
 
   /* Accent */
-  --color-accent:           #5b8cf5;                   /* Primary interactive: buttons, links */
-  --color-accent-hover:     #7aa3ff;                   /* Hover on accent elements */
-  --color-accent-dim:       rgba(91, 140, 245, 0.15);  /* Accent tint for backgrounds */
+  --color-accent: #5b8cf5; /* Primary interactive: buttons, links */
+  --color-accent-hover: #7aa3ff; /* Hover on accent elements */
+  --color-accent-dim: rgba(91, 140, 245, 0.15); /* Accent tint for backgrounds */
 
   /* AI / Improve */
-  --color-ai:               #a855f7;                   /* Purple: AI improvement elements */
-  --color-ai-hover:         #c084fc;
-  --color-ai-dim:           rgba(168, 85, 247, 0.15);
+  --color-ai: #a855f7; /* Purple: AI improvement elements */
+  --color-ai-hover: #c084fc;
+  --color-ai-dim: rgba(168, 85, 247, 0.15);
 
   /* Status */
-  --color-success:          #34d399;                   /* Copied, connected, done */
-  --color-warning:          #fbbf24;                   /* Rate limit, slow response */
-  --color-error:            #f87171;                   /* API failure, key invalid */
+  --color-success: #34d399; /* Copied, connected, done */
+  --color-warning: #fbbf24; /* Rate limit, slow response */
+  --color-error: #f87171; /* API failure, key invalid */
 
   /* Borders */
-  --color-border:           rgba(255, 255, 255, 0.08); /* Subtle dividers */
-  --color-border-focus:     var(--color-accent);
+  --color-border: rgba(255, 255, 255, 0.08); /* Subtle dividers */
+  --color-border-focus: var(--color-accent);
 
   /* Bubble header gradient */
-  --color-bubble-header:    linear-gradient(135deg, #1e2a4a 0%, #1a1a2e 100%);
+  --color-bubble-header: linear-gradient(135deg, #1e2a4a 0%, #1a1a2e 100%);
 }
 
 body {
-  font-family: 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-family:
+    'Segoe UI Variable',
+    'Segoe UI',
+    system-ui,
+    -apple-system,
+    sans-serif;
   margin: 0;
   background-color: transparent;
   color: var(--color-text-primary);

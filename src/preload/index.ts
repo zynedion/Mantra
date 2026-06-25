@@ -3,29 +3,28 @@ import { ISettings, ITranslationRequest, IAIImproveRequest } from '../renderer/t
 
 // Safe APIs exposed to the renderer under window.electronAPI
 const electronAPI = {
-  translateText: (request: ITranslationRequest) =>
-    ipcRenderer.invoke('translate-text', request),
+  translateText: (request: ITranslationRequest) => ipcRenderer.invoke('translate-text', request),
 
   improveTranslation: (request: IAIImproveRequest) =>
     ipcRenderer.invoke('improve-translation', request),
 
-  getSettings: () =>
-    ipcRenderer.invoke('get-settings'),
+  getSettings: () => ipcRenderer.invoke('get-settings'),
 
-  saveSettings: (settings: Partial<ISettings>) =>
-    ipcRenderer.invoke('save-settings', settings),
+  saveSettings: (settings: Partial<ISettings>) => ipcRenderer.invoke('save-settings', settings),
 
-  getHistory: (params: { limit: number }) =>
-    ipcRenderer.invoke('get-history', params),
+  getHistory: (params: { limit: number }) => ipcRenderer.invoke('get-history', params),
 
-  clearHistory: () =>
-    ipcRenderer.invoke('clear-history'),
+  clearHistory: () => ipcRenderer.invoke('clear-history'),
 
-  setMouseEvents: (ignore: boolean) =>
-    ipcRenderer.invoke('set-mouse-events', { ignore }),
+  setMouseEvents: (ignore: boolean) => ipcRenderer.invoke('set-mouse-events', { ignore }),
 
-  onContextMenuTriggered: (callback: (text: string) => void) => {
-    const subscription = (_event: any, text: string): void => callback(text)
+  onContextMenuTriggered: (
+    callback: (data: string | { text: string; isTruncated: boolean }) => void
+  ) => {
+    const subscription = (
+      _event: unknown,
+      data: string | { text: string; isTruncated: boolean }
+    ): void => callback(data)
     ipcRenderer.on('context-menu-triggered', subscription)
     return () => {
       ipcRenderer.off('context-menu-triggered', subscription)

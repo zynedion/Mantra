@@ -1,4 +1,5 @@
 # Mantra — UI/UX Design Brief
+
 > **For:** Claude Design / Figma / Hi-Fi Prototype
 > **Product:** Mantra — Manga Translator (Windows Desktop App, Electron)
 > **Version:** 1.0 Design Handoff
@@ -6,15 +7,18 @@
 ---
 
 ## What is Mantra?
+
 A Windows desktop utility that floats above the user's browser while they read manga. When a user selects Japanese text (via Windows Click to Do OCR or manual selection) and right-clicks → "Translate with Mantra", a draggable floating bubble appears showing the translation. An optional AI step rewrites the stiff machine translation into natural manga dialogue.
 
 The app lives in the system tray. The two main surfaces are:
+
 1. **Translation Bubble** — floating overlay, always-on-top, appears on demand
 2. **Settings Panel** — separate window, opened from tray
 
 ---
 
 ## Visual Direction
+
 **Aesthetic:** Clean dark glass. Minimal, non-intrusive, utility-first.
 **Mood:** Like a well-designed developer tool or a smart Windows widget — not a consumer app, not a dashboard.
 **Reference feel:** Windows 11 Mica material + modern dark IDEs (VS Code dark) + subtle blue accent.
@@ -23,6 +27,7 @@ The app lives in the system tray. The two main surfaces are:
 ---
 
 ## Color Palette
+
 ```
 Background — Bubble:    rgba(18, 18, 24, 0.95)   — near-black with blue undertone
 Background — Settings:  #0f0f14
@@ -54,6 +59,7 @@ Bubble header gradient: linear-gradient(135deg, #1e2a4a → #1a1a2e)
 ---
 
 ## Typography
+
 ```
 Font: Segoe UI Variable (Windows system font — no install needed)
 Fallback: system-ui, sans-serif
@@ -79,6 +85,7 @@ Weight:
 ## Screen 1: Translation Bubble (PRIMARY SURFACE)
 
 ### Dimensions & Behavior
+
 - Default size: **280px wide × content-height** (roughly 180–220px typical)
 - Minimum: 200px × 120px
 - Maximum: 500px wide
@@ -93,6 +100,7 @@ Weight:
 ### Anatomy (top to bottom)
 
 **A. Header Bar** (36px tall, full width, drag handle)
+
 ```
 Background: gradient (see palette above)
 Left: "M" monogram mark — 14px, color: #5b8cf5, font-weight 700
@@ -106,6 +114,7 @@ Border-bottom: 1px solid rgba(255,255,255,0.06)
 ```
 
 **B. Content Area** (padding: 12px)
+
 ```
 Section: ORIGINAL
   Label: "ORIGINAL" — 10px, #55556a, letter-spacing: 0.08em, uppercase
@@ -146,6 +155,7 @@ Section: AI IMPROVED
 ```
 
 **C. Action Row** (padding: 0 12px 10px, gap: 8px)
+
 ```
 [Copy button]
   style: secondary (dark card bg, border)
@@ -162,6 +172,7 @@ Section: AI IMPROVED
 ```
 
 **D. Footer** (padding: 4px 12px 10px)
+
 ```
 Left: language badge pill
   text: "JA → ID" (source → target)
@@ -178,6 +189,7 @@ Right: time elapsed or timestamp
 ### Bubble States
 
 **State 1: Loading**
+
 ```
 Header: normal (shows "M" mark)
 Content:
@@ -189,6 +201,7 @@ Content:
 ```
 
 **State 2: Error**
+
 ```
 Border: 1px solid rgba(248, 113, 113, 0.5)  — red tint
 Header: normal
@@ -202,6 +215,7 @@ Action row:
 ```
 
 **State 3: Minimized**
+
 ```
 Height: 36px (header only)
 Header right: chevron points UP (▲)
@@ -210,6 +224,7 @@ Everything else: hidden
 ```
 
 ### Multiple Bubbles
+
 ```
 Counter chip (bottom-right corner, fixed):
   Appears only when 2+ bubbles open
@@ -230,6 +245,7 @@ Below counter: [Close All] button
 ## Screen 2: Settings Panel
 
 ### Dimensions & Behavior
+
 - Fixed size: **560px × 600px**
 - Not resizable
 - Centered on screen
@@ -237,6 +253,7 @@ Below counter: [Close All] button
 - Background: #0f0f14
 
 ### Custom Title Bar (32px tall)
+
 ```
 Left: "M" monogram 12px + "Mantra Settings" — 13px, #9090a8
 Right: standard close button (×) — 16px icon, hover: red bg
@@ -248,6 +265,7 @@ Drag region: full title bar width
 ### Layout: Sidebar + Content (two-column)
 
 **Left Sidebar** (160px wide)
+
 ```
 Background: #1e1e2a
 Border-right: 1px solid rgba(255,255,255,0.06)
@@ -277,6 +295,7 @@ Each nav item:
 ```
 
 **Right Content Area** (400px wide)
+
 ```
 Padding: 24px
 Overflow-y: scroll (if content exceeds height)
@@ -305,6 +324,7 @@ Setting Row pattern:
 ```
 
 ### Tab 1: Translation
+
 ```
 Title: "Translation"
 
@@ -317,6 +337,7 @@ Row 1: Target Language
 ```
 
 ### Tab 2: AI Improvement
+
 ```
 Title: "AI Improvement"
 Sub-title (below title, before first row):
@@ -364,6 +385,7 @@ Row (last): Auto-Improve
 ```
 
 ### Tab 3: Appearance
+
 ```
 Title: "Appearance"
 
@@ -387,6 +409,7 @@ Row 3: Minimize to Tray
 ```
 
 ### Tab 4: About
+
 ```
 Title: "About"
 
@@ -407,6 +430,7 @@ Content (centered, not rows):
 ## Component Library (for design system)
 
 ### Button variants to design:
+
 1. Primary — blue fill
 2. Secondary — dark card + border
 3. Ghost — transparent
@@ -415,6 +439,7 @@ Content (centered, not rows):
 6. Link — text only, underline on hover
 
 ### Form controls:
+
 1. Input (text)
 2. PasswordInput (with show/hide toggle)
 3. Select / Dropdown
@@ -422,12 +447,14 @@ Content (centered, not rows):
 5. Slider (range with label)
 
 ### Status badges:
+
 1. Success (green pill)
 2. Error (red pill)
 3. Loading (spinner + text)
 4. Language pair (neutral pill, e.g. "JA → ID")
 
 ### Bubble variants:
+
 1. Normal (loaded translation)
 2. Loading (skeleton)
 3. Error (red border)
@@ -439,6 +466,7 @@ Content (centered, not rows):
 ## User Flows to Prototype
 
 ### Flow 1: Core Translation (MVP)
+
 ```
 [Manga in browser]
 → User selects text via Click to Do
@@ -451,6 +479,7 @@ Content (centered, not rows):
 ```
 
 ### Flow 2: AI Improvement
+
 ```
 [Bubble with raw translation visible]
 → User clicks "✨ Improve"
@@ -462,6 +491,7 @@ Content (centered, not rows):
 ```
 
 ### Flow 3: Settings — Configure Groq
+
 ```
 [System tray]
 → Right-click → Open Settings
@@ -476,6 +506,7 @@ Content (centered, not rows):
 ```
 
 ### Flow 4: Multiple Bubbles
+
 ```
 [Two manga panels selected in sequence]
 → First bubble at (24, 24)
@@ -489,6 +520,7 @@ Content (centered, not rows):
 ---
 
 ## Prototype Interactions to Include
+
 - [ ] Bubble drag (simulate by showing alternate position state)
 - [ ] Bubble minimize → expand
 - [ ] Close bubble
@@ -504,6 +536,7 @@ Content (centered, not rows):
 ---
 
 ## Notes for Designer
+
 1. The bubble is the hero. Make it feel polished and light — not like a Chrome extension popup.
 2. The "AI IMPROVED" section should feel premium and distinct from raw translation — the purple color system should make it feel like a separate tier.
 3. Bubbles stack visually on screen. Design a "multi-bubble" frame showing 2–3 bubbles at different positions.

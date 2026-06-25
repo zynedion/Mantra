@@ -213,7 +213,7 @@ app.whenReady().then(() => {
   registerContextMenu()
 
   // Register IPC handlers
-  registerIpcHandlers(bubbleWindow, () => settingsWindow)
+  registerIpcHandlers(bubbleWindow)
 
   // If launched via context menu directly while app was not running
   if (process.argv.includes('--translate-selection')) {

@@ -7,9 +7,37 @@
 
 ---
 
+## 2026-06-25 — Feature 03 Implemented
+
+### What was built
+
+- Implemented `src/renderer/services/language-detect.ts` using `franc` to automatically detect the source language. Configured it to map ISO 639-3 codes (e.g. `jpn`, `zho`, `cmn`, `kor`, `eng`, `ind`) to ISO 639-1 equivalents for MyMemory, defaulting to `ja` for undetermined (`und`) inputs.
+- Implemented `src/renderer/services/translation.ts` to coordinate MyMemory API requests. It chunks input strings exceeding the 500-character limitation at sentence boundaries (spaces, newlines, or Japanese punctuation `。` and `、`), executes translations in parallel using `Promise.all`, and merges the translated fragments.
+- Modified `src/main/ipc-handlers.ts` to hook up the `translate-text` handler, calling the translation pipeline. On success, it generates a unique entry ID via `crypto.randomUUID()`, prepends the entry to `electron-store` history, and trims the list to 500 entries.
+- Modified React `App.tsx` and preload scripts to fully support loading indicators, language badges, error messages, and a functional "Retry" trigger.
+- Resolved all TypeScript and ESLint type warnings/errors: eliminated `any` usage, calculated `windowName` directly inside state initializer to prevent React render loop warnings, safely typed history entries and catch blocks, and ignored `.agents` in ESLint configuration.
+- Verified build compiles cleanly (`npm run build`), linter passes without errors/warnings (`npm run lint`), and verified translation outputs on multi-language clipboard selections (Japanese, Korean, Chinese, and long chunked texts).
+
+### Decisions made
+
+- **Sentence Boundary Chunking**: Split long text by searching backwards from the 500th character for common delimiters (` `, `\n`, `。`, `、`) to preserve translation context.
+- **Mandarin Chinese Detection**: Added `cmn` (Mandarin) mapping to `zh` since `franc` identifies standard Chinese as `cmn` rather than the broader macrolanguage code `zho`.
+- **Preload API Contract Typing**: Exposed a strict `ITranslationResponse` structure containing `data` or `error` in preload types to eliminate unsafe `any` casting in React UI code.
+
+### Deviations from spec
+
+- None. Fully compliant with specs.
+
+### Next session should start with
+
+- Feature 04 (Translation Bubbles) to replace the basic React bubble with a draggable, resizable float overlay (`react-rnd`) with customizable styling, window click-through, and close triggers.
+
+---
+
 ## 2026-06-25 — Feature 02 Implemented
 
 ### What was built
+
 - Implemented `src/main/context-menu.ts` to register/unregister context menu commands via Windows Registry shell entries under `HKCU\Software\Classes\*`. It auto-resolves between production (`Mantra.exe`) and dev mode (`electron.cmd` with project path).
 - Modified `src/main/index.ts` to listen to `--translate-selection` command-line arguments on both first startup and second instance locks.
 - Configured 100ms clipboard synchronization delay after triggering to allow browsers/Click-to-Do to copy text to the clipboard.
@@ -20,13 +48,16 @@
 - Verified Windows Registry structure via `reg query` and successfully compiled all bundles.
 
 ### Decisions made
+
 - **Direct CLI Registry Writes**: Used `reg add` commands directly in `child_process.exec` rather than writing a temporary `.reg` file, reducing disk I/O.
 - **Context-Isolated Bridge Events**: Handled subscription listeners cleanly in Preload to allow the React renderer to listen for context menu triggers without exposing the raw Electron ipcRenderer.
 
 ### Deviations from spec
+
 - None. Fully compliant with specs.
 
 ### Next session should start with
+
 - Feature 03 (Translation Pipeline) to replace the mock response handler with the real MyMemory translation API.
 
 ---
@@ -34,6 +65,7 @@
 ## 2026-06-25 — Feature 01 Implemented
 
 ### What was built
+
 - Bootstrapped Electron project using `create-electron` and configured ESM/CJS interop for electron-store.
 - Created `src/renderer/types/index.ts` with shared TypeScript definitions.
 - Configured Tailwind CSS v4 using `@tailwindcss/postcss` for custom styling.
@@ -44,14 +76,17 @@
 - Initialized local Git repository, created initial commit, and created a new public GitHub repository [zynedion/Mantra](https://github.com/zynedion/Mantra) using the GitHub CLI (`gh`), pushing the initial codebase.
 
 ### Decisions made
+
 - **Vite Router-less Windowing**: Load same entry point `index.html` with query params (`?window=bubble` and `?window=settings`) to easily render specific window layouts.
 - **Tailwind v4 PostCSS Integration**: Used `@tailwindcss/postcss` devDependency to integrate Tailwind with postcss-loader in the Vite renderer pipeline.
 - **Electron-store CJS Workaround**: Resolved pure ESM `electron-store` package export dynamically using `.default` fallback in CommonJS main process.
 
 ### Deviations from spec
+
 - Installed `@tailwindcss/postcss` as Tailwind CSS v4 requires it for PostCSS compilation instead of importing `tailwindcss` directly as a PostCSS plugin.
 
 ### Next session should start with
+
 - Feature 02 (Context Menu Integration) to link OS right-click actions (from Click to Do or manual select) with the Mantra app overlay.
 
 ---
@@ -59,9 +94,11 @@
 ## 2026-06-25 — PRD Created
 
 ### What was built
+
 Initial Product Requirements Document generated. No code written yet. All six feature files created and ready for implementation.
 
 ### Decisions made
+
 - **Windows-only v1:** Mantra targets Windows 11 exclusively. Click to Do OCR (Copilot+ PC, Build 26100+) is the core input mechanism. macOS/Linux deferred indefinitely.
 - **No custom OCR:** Rather than implementing Tesseract.js or a separate OCR library, Mantra leverages Windows' built-in OCR via Click to Do. Mantra receives already-extracted text via the context menu / clipboard bridge. This eliminates the biggest technical risk in the project.
 - **MyMemory as sole translation provider in v1:** Free, no API key, sufficient for persona use case (~10k chars/session vs 100k daily limit). DeepL/Google Cloud deferred.
@@ -73,19 +110,23 @@ Initial Product Requirements Document generated. No code written yet. All six fe
 - **App name: Mantra** — stands for "Manga Translator". Distinct, memorable, brand-able.
 
 ### Deviations from spec
+
 None — this is the initial spec.
 
 ### Constraints discovered
+
 - Windows Click to Do context menu behavior: text selected via Click to Do OCR is copied to clipboard when a context menu action fires. This is the integration point. Verified on ASUS Vivobook M1407KA (Build 26200).
 - Direct `Windows.Media.Ocr` PowerShell/Node.js access is not available via standard reflection (`LoadWithPartialName` returns null). This is why the clipboard-bridge approach was chosen instead.
 - MyMemory max input: 500 characters per request. Texts longer than 500 chars (rare for manga panels) must be split and responses concatenated. Implement in Feature 03.
 
 ### Known issues / tech debt
+
 - [ ] Context menu appears for all files/text system-wide (Shell extension is broad). If this causes UX clutter, scope to browser-only via a Chrome Extension in v2. (low)
 - [ ] Ollama first-inference latency can be 5–15 seconds on cold start. Consider a "warming" ping on app start if autoImprove is enabled. (medium)
 - [ ] franc accuracy on very short Japanese strings (<5 chars) is low. Current mitigation: default to `ja`. Long-term: consider character-range detection (CJK unicode range check). (low)
 
 ### Next session should start with
+
 Read `docs/00_master_plan.md` and `docs/01_technical_specs.md`. Begin with Feature 01 (App Shell). Initialize the Electron project using `electron-vite` scaffolding: `npm create @quick-start/electron@latest mantra -- --template react-ts`. Then implement the BrowserWindow setup, tray icon, and electron-store initialization as specified in `docs/03_features/01_app-shell.md`. Do not implement any UI content or translation logic in this session.
 
 ---
