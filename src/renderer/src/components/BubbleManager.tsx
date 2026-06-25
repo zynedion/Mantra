@@ -16,13 +16,7 @@ export function BubbleManager({
   const { bubbles, clearAll } = useBubbleStore()
 
   if (bubbles.length === 0) {
-    return (
-      <div className="w-screen h-screen bg-transparent pointer-events-none select-none flex items-center justify-center">
-        <div className="text-text-muted text-xs bg-bg-bubble border border-border p-2 rounded-md">
-          Mantra Bubble Overlay (Active & Click-through)
-        </div>
-      </div>
-    )
+    return <></>
   }
 
   return (
