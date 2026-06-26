@@ -115,15 +115,18 @@ export function TranslationBubble({
       maxWidth={500}
       disableDragging={false}
       enableResizing={!bubble.isMinimized}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      className={`fixed flex flex-col rounded-lg border overflow-hidden ${
+      className={`flex flex-col rounded-lg border overflow-hidden ${
         isFocused
           ? 'border-accent shadow-[0_8px_32px_rgba(0,0,0,0.7)] z-50'
           : 'border-border shadow-bubble z-10'
       } bg-bg-bubble text-text-primary pointer-events-auto transition-shadow`}
       style={{ display: 'flex', opacity: settings?.bubbleOpacity ?? 0.95 }}
     >
+      <div
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        className="w-full h-full flex flex-col"
+      >
       {/* Header bar */}
       <div
         className={`bubble-header flex items-center justify-between h-9 px-3 shrink-0 cursor-grab active:cursor-grabbing border-b border-border select-none`}
@@ -306,6 +309,7 @@ export function TranslationBubble({
             )}
         </div>
       )}
+      </div>
     </Rnd>
   )
 }
